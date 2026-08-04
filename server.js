@@ -116,8 +116,8 @@ app.post('/api/criar-pagamento', verificarToken, async (req, res) => {
     try {
         let preference = new Preference(mpClient);
         
-        // Pegando o host de forma segura ou usando o seu domínio direto do Render
-        let hostUrl = req.protocol + '://' + req.get('host');
+        // Garante que a URL utilize https:// obrigatoriamente para o Mercado Pago aceitar
+        let hostUrl = 'https://' + req.get('host');
 
         let respostaMp = await preference.create({
             body: {
