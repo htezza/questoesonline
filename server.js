@@ -388,6 +388,17 @@ Texto: ${textoDistribuido}`;
     });
 });
 
+// COLE A ROTA TEMPORÁRIA AQUI EMBAIXO:
+app.get('/api/tornar-admin/:email', (req, res) => {
+    let emailAdmin = req.params.email;
+    db.run(`UPDATE usuarios SET role = 'admin' WHERE email = ?`, [emailAdmin], function(err) {
+        if (err) return res.status(500).json({ erro: "Erro ao atualizar." });
+        if (this.changes === 0) return res.status(404).json({ erro: "E-mail não encontrado." });
+        res.json({ sucesso: true, mensagem: `O usuário ${emailAdmin} agora é Administrador!` });
+    });
+});
+// ==========================================
+
 app.listen(PORTA, () => {
     console.log(`Servidor rodando online na porta ${PORTA}`);
 });
