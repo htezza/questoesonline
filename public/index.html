@@ -712,7 +712,7 @@ function gerarPDFProva(){
         addText(q.pergunta, 10, "normal", [30, 41, 59], 0); y += 2;
         q.opcoes.forEach(op => { addText(`(   )  ${op}`, 9.5, "normal", [71, 85, 105], 6); }); y += 6; 
     });
-    pdf.save("Simulado_FAPEC.pdf");
+    pdf.save("Simulado.pdf");
 }
 
 async function carregarEstatisticasServidor() {
