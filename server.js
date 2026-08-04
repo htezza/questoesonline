@@ -136,7 +136,7 @@ app.post('/api/criar-pagamento', verificarToken, async (req, res) => {
 
         res.json({ init_point: respostaMp.init_point });
     } catch(e) {
-        console.error("Erro MP:", e);
+        console.error("Erro detalhado do MP:", e); // Adicione isso para ver o log exato
         res.status(500).json({ erro: "Erro ao criar preferência de pagamento." });
     }
 });
