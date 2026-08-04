@@ -150,7 +150,7 @@ app.post('/api/criar-pagamento', verificarToken, async (req, res) => {
 app.post('/api/webhook/pagamento', async (req, res) => {
     let event = req.body;
     try {
-        if (event.type === 'payment' || event.action === 'payment.created') {
+        if (event.type === 'payment' || event.action === 'payment.created' || event.action === 'payment.updated') {
             let paymentId = event.data?.id;
             if (paymentId) {
                 let resposta = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
