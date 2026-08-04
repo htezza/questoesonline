@@ -135,6 +135,7 @@ app.post('/api/criar-pagamento', verificarToken, async (req, res) => {
                     failure: `${hostUrl}/?pagamento=falha`,
                     pending: `${hostUrl}/?pagamento=pendente`
                 },
+                notification_url: `${hostUrl}/api/webhook/pagamento`,
                 auto_return: "approved"
             }
         });
