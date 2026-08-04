@@ -14,7 +14,7 @@ const GEMINI_API_KEY = "AQ.Ab8RN6ItioTr9Zx48l365u9RishRgggdkmQQoUimvFmkelTjhw";
 const MODELO_GEMINI = "gemini-3.1-flash-lite";
 
 // CONFIGURAÇÃO DO MERCADO PAGO (Cole seu Access Token do MP abaixo)
-const mpClient = new MercadoPagoConfig({ accessToken: 'APP_USR-8555800930210598-080414-9131a38631e3d788786c7bb6e3c24216-3591491580' });
+const mpClient = new MercadoPagoConfig({ accessToken: 'APP_USR-5232629439354822-080414-00c1e350ba8fd72cacb2aafa69f6d94b-109548169' });
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
