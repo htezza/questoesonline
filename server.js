@@ -6,11 +6,11 @@ const path = require('path');
 const { MercadoPagoConfig, Preference } = require('mercadopago');
 
 const app = express();
-const PORTA = process.env.PORT || 3005;
-const SECRET_JWT = "AQ.Ab8RN6ItioTr9Zx48l365u9RishRgggdkmQQoUimvFmkelTjhw";
+const PORTA = process.env.PORT || 10000;
+const SECRET_JWT = "Tezzah917!";
 
 // COLE SUA CHAVE DO GEMINI AQUI:
-const GEMINI_API_KEY = "AQ.Ab8RN6ItioTr9Zx48l365u9RishRgggdkmQQoUimvFmkelTjhw"; 
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const MODELO_GEMINI = "gemini-3.1-flash-lite";
 
 // CONFIGURAÇÃO DO MERCADO PAGO (Cole seu Access Token do MP abaixo)
