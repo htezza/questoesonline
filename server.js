@@ -340,7 +340,7 @@ app.post('/api/gerar-questoes', verificarToken, async (req, res) => {
             }
             let textoDistribuido = trechos.join("\n\n");
 
-            let prompt = `Atue como elaborador da banca FAPEC para Auditor Municipal. Crie exatamente ${quantidade} questões inéditas de múltipla escolha com base no texto.
+            /*let prompt = `Atue como elaborador da banca FAPEC para Auditor Municipal. Crie exatamente ${quantidade} questões inéditas de múltipla escolha com base no texto.
 REGRAS:
 1. Nível: ${nivel}.
 2. Cada questão DEVE ter 4 alternativas (A, B, C, D).
@@ -353,6 +353,26 @@ Formato:
     "opcoes": ["A) ...", "B) ...", "C) ...", "D) ..."],
     "resposta": "A",
     "explicacao": "Explicação..."
+  }
+]
+Texto: ${textoDistribuido}`;*/
+            
+            let prompt = `Atue como uma banca examinadora de alto nível especializada em concursos públicos para carreiras jurídicas e fiscais 
+(como Auditor Fiscal, Procurador Municipal/Estadual, Analista Jurídico e Controlador). 
+Crie exatamente ${quantidade} questões inéditas e de alto nível de múltipla escolha com base no texto fornecido, 
+focando na interpretação rigorosa de leis, jurisprudência, doutrina, legislação tributária, direito administrativo e financeiro.
+REGRAS:
+1. Nível: ${nivel}.
+2. Cada questão DEVE ter 4 alternativas (A, B, C, D).
+3. Retorne EXCLUSIVAMENTE um JSON array válido (sem markdown, sem \`\`\`json).
+Formato:
+[
+  {
+    "tema": "Nome do tópico jurídico/fiscal",
+    "pergunta": "Enunciado complexo e aprofundado...",
+    "opcoes": ["A) ...", "B) ...", "C) ...", "D) ..."],
+    "resposta": "A",
+    "explicacao": "Fundamentação legal ou doutrinária detalhada..."
   }
 ]
 Texto: ${textoDistribuido}`;
