@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Simulador Auditor Municipal - Rio Brilhante/MS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+*{ box-sizing:border-box; }
+body{
+    font-family:'Segoe UI',Arial,sans-serif;
+    background: linear-gradient(135deg,#e0f2fe,#f1f5f9);
+    padding:20px;
+    color:#1e293b;
+    margin: 0;
+}
+.container{
+    max-width:900px;
+    margin:auto;
+    background:white;
+    padding:25px;
+    border-radius:20px;
+    box-shadow: 0 15px 35px rgba(0,0,0,.08);
+}
+h1{ text-align:center; font-size:24px; color:#1e40af; margin:0 0 15px 0; }
+h3{ text-align:center; color:#1e40af; }
+p{ font-size:14px; }
+label{ display:block; font-weight:600; font-size:14px; margin-top:12px; color:#334155; }
+input, select{
+    width:100%; padding:11px; border-radius:10px; border:1px solid #cbd5e1; font-size:14px; margin-top:5px; background:#f8fafc;
+    transition: all 0.3s ease;
+}
+input:focus, select:focus{ outline:none; border-color:#2563eb; background:white; box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+button{
+    width:100%; padding:12px; margin-top:12px; border:none; border-radius:10px; background: linear-gradient(135deg,#2563eb,#1d4ed8); color:white; font-size:14px; font-weight:bold; cursor:pointer; transition:all 0.3s ease;
+}
+button:hover:not(:disabled){ transform:translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.3); }
+button:disabled { background: #cbd5e1; color: #64748b; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.tab-nav { display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; flex-wrap: wrap; }
+.tab-btn { background: #f1f5f9; color: #64748b; padding: 10px 20px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; width: auto; margin: 0; transition: all 0.3s; }
+.tab-btn.active { background: #2563eb; color: white; box-shadow: 0 4px 12px rgba(37,99,235,0.25); }
+
+#status{ margin-top:15px; padding:12px; border-radius:10px; background:#eff6ff; font-size:14px; font-weight:bold; text-align:center; color: #1e40af; }
+.questao{ background:#f8fafc; border-radius:12px; padding:18px; margin-top:15px; border: 1px solid #e2e8f0; border-left: 4px solid #2563eb; }
+.questao b{ font-size:15px; color:#1e40af; }
+.questao p{ font-size:14px; margin:8px 0; }
+.questao label{ font-weight:normal; font-size:13px; margin:4px 0; padding:8px 12px; border-radius:8px; background:white; cursor:pointer; display:block; border: 1px solid #e2e8f0; transition: background 0.2s; }
+.questao label:hover{ background:#f1f5f9; border-color: #cbd5e1; }
+.questao input{ width:auto; margin-right:10px; }
+
+.resultado{ margin-top:20px; padding:18px; background:#f0fdf4; border: 1px solid #bbf7d0; border-radius:12px; text-align:center; font-size:18px; font-weight:bold; color:#166534; }
+.alternativa.correta{ background:#f0fdf4 !important; border-color:#22c55e !important; border-left:4px solid #16a34a !important; }
+.alternativa.errada{ background:#fef2f2 !important; border-color:#f87171 !important; border-left:4px solid #dc2626 !important; }
+.explicacao{ margin-top:12px; padding:15px; background:#eff6ff; border: 1px solid #bfdbfe; border-radius:10px; font-size:14px; color:#1e3a8a; }
+
+#progresso{ width:100%; height:10px; background:#e2e8f0; border-radius:20px; overflow:hidden; margin-top:15px; display:none; }
+#barra{ width:0%; height:100%; background:linear-gradient(90deg,#2563eb,#22c55e); transition:width .4s; }
+.hidden { display: none !important; }
+
+.user-bar { background: #f8fafc; padding: 12px 18px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; border: 1px solid #e2e8f0; flex-wrap: wrap; gap: 10px;}
+
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
+.stat-card { background: linear-gradient(135deg, #f8fafc, #f1f5f9); padding: 20px; border-radius: 14px; text-align: center; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
+.stat-card h3 { margin: 0; color: #2563eb; font-size: 28px; font-weight: 700; }
+.stat-card p { margin: 8px 0 0 0; color: #64748b; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.chart-wrapper { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
+.chart-container { position: relative; width: 100%; height: 300px; margin: auto; }
+
+.admin-table-wrapper { overflow-x: auto; margin-top: 20px; }
+.admin-table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0; }
+.admin-table th { background: #f8fafc; color: #334155; padding: 12px; text-align: left; font-size: 13px; border-bottom: 1px solid #e2e8f0; }
+.admin-table td { padding: 12px; font-size: 14px; border-bottom: 1px solid #f1f5f9; }
+
+.loja-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
+.pacote-card { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 15px; text-align: center; }
+.pacote-card h4 { margin: 0 0 10px 0; color: #1e40af; }
+.pacote-card p { font-size: 16px; font-weight: bold; color: #16a34a; margin-bottom: 10px; }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- TELA DE AUTENTICAÇÃO, REGISTRO E RECUPERAÇÃO -->
+    <div id="authScreen">
+        <h1>🔐 Autenticação</h1>
+        <p style="text-align:center;color:#64748b">Faça login ou crie sua conta para salvar seu progresso</p>
+        
+        <div id="authErro" style="color: #dc2626; text-align:center; font-weight:bold; margin-bottom: 10px;"></div>
+
+        <!-- Formulário de Login -->
+        <div id="formLoginDiv">
+            <label>E-mail:</label>
+            <input type="email" id="loginEmail" placeholder="seu@email.com">
+
+            <label>Senha:</label>
+            <input type="password" id="loginSenha" placeholder="Sua senha">
+
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button onclick="fazerLogin()">Entrar</button>
+                <button onclick="mostrarTelaRegistro(true)" style="background: linear-gradient(135deg,#16a34a,#15803d);">Criar Conta</button>
+            </div>
+
+            <p style="text-align:center; margin-top: 15px;">
+                <a href="#" onclick="mostrarEsqueciSenha(true)" style="color:#2563eb; text-decoration:none; font-size:13px;">Esqueceu sua senha?</a>
+            </p>
+        </div>
+
+        <!-- Formulário de Criação de Conta -->
+        <div id="formRegistroDiv" class="hidden">
+            <h3 style="color:#16a34a;">Criar Nova Conta</h3>
+            <label>E-mail:</label>
+            <input type="email" id="regEmail" placeholder="seu@email.com">
+
+            <label>Senha:</label>
+            <input type="password" id="regSenha" placeholder="Crie uma senha forte">
+
+            <label>Confirme a Senha:</label>
+            <input type="password" id="regConfirmaSenha" placeholder="Digite a senha novamente">
+
+            <button onclick="fazerRegistro()" style="background: linear-gradient(135deg,#16a34a,#15803d);">Concluir Cadastro</button>
+
+            <p style="text-align:center; margin-top: 15px;">
+                <a href="#" onclick="mostrarTelaRegistro(false)" style="color:#64748b; text-decoration:none; font-size:13px;">Voltar para o login</a>
+            </p>
+        </div>
+
+        <!-- Formulário de Recuperação de Senha -->
+        <div id="formEsqueciDiv" class="hidden">
+            <h3>Recuperação de Senha</h3>
+            <label>E-mail cadastrado:</label>
+            <input type="email" id="recoveryEmail" placeholder="seu@email.com">
+            <button onclick="solicitarTokenRecuperacao()">Enviar Token de Recuperação</button>
+
+            <div id="blocoRedefinicao" class="hidden" style="margin-top: 15px; border-top: 1px solid #e2e8f0; padding-top: 10px;">
+                <label>Token recebido:</label>
+                <input type="text" id="recoveryToken" placeholder="Cole o token aqui">
+
+                <label>Nova Senha:</label>
+                <input type="password" id="recoveryNovaSenha" placeholder="Digite a nova senha">
+
+                <label>Confirme a Nova Senha:</label>
+                <input type="password" id="recoveryConfirmaSenha" placeholder="Repita a nova senha">
+
+                <button onclick="executarRedefinicaoSenha()" style="background: linear-gradient(135deg,#16a34a,#15803d);">Salvar Nova Senha</button>
+            </div>
+
+            <p style="text-align:center; margin-top: 15px;">
+                <a href="#" onclick="mostrarEsqueciSenha(false)" style="color:#64748b; text-decoration:none; font-size:13px;">Voltar para o Login</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- TELA PRINCIPAL -->
+    <div id="appScreen" class="hidden">
+        
+        <div class="user-bar">
+            <span>👤 <strong id="userEmailSpan"></strong></span>
+            <span>💎 Créditos: <strong id="creditosSpan" style="color:#16a34a; font-size:16px;">0</strong></span>
+            <div style="display: flex; gap: 8px;">
+                <button onclick="abrirModalAlterarSenha()" style="width: auto; padding: 6px 14px; margin: 0; background: #2563eb; font-size: 12px;">Alterar Senha</button>
+                <button onclick="fazerLogout()" style="width: auto; padding: 6px 14px; margin: 0; background: #ef4444; font-size: 12px;">Sair</button>
+            </div>
+        </div>
+
+        <!-- Bloco para alteração de senha do usuário logado -->
+        <div id="painelAlterarSenha" class="hidden" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+            <h3 style="margin-top: 0; text-align: left; font-size: 16px;">🔑 Alterar Minha Senha</h3>
+            <div id="msgAlterarSenha" style="font-size: 13px; font-weight: bold; margin-bottom: 10px;"></div>
+            
+            <label>Senha Atual:</label>
+            <input type="password" id="perfilSenhaAtual" placeholder="Digite sua senha atual">
+
+            <label>Nova Senha:</label>
+            <input type="password" id="perfilNovaSenha" placeholder="Digite a nova senha">
+
+            <label>Confirme a Nova Senha:</label>
+            <input type="password" id="perfilConfirmaSenha" placeholder="Repita a nova senha">
+
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button onclick="executarAlterarSenhaUsuario()" style="width: auto; padding: 8px 16px; margin: 0; background: #16a34a;">Salvar Nova Senha</button>
+                <button onclick="fecharModalAlterarSenha()" style="width: auto; padding: 8px 16px; margin: 0; background: #64748b;">Cancelar</button>
+            </div>
+        </div>
+
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="mudarAba('gerador', this)">📝 Gerar & Simulado</button>
+            <button class="tab-btn" onclick="mudarAba('loja', this)">💳 Comprar Créditos</button>
+            <button class="tab-btn" onclick="mudarAba('estatisticas', this)">📊 Meu Desempenho</button>
+            <button id="btnTabAdmin" class="tab-btn hidden" onclick="mudarAba('admin', this)" style="background: #fee2e2; color: #991b1b;">⚙️ Painel Admin</button>
+        </div>
+
+        <!-- ABA 1: GERADOR DE QUESTÕES -->
+        <div id="tabGerador">
+            <h1>🏛️ Simulador Auditor - Pref. Rio Brilhante</h1>
+            <p style="text-align:center;color:#64748b">Transforme qualquer PDF em questões no estilo da banca FAPEC</p>
+
+            <label>Selecione o PDF:</label>
+            <input type="file" id="arquivo" accept="application/pdf">
+
+            <label>Quantidade de exercícios (1 crédito por questão - máx. 50):</label>
+            <input type="number" id="quantidade" value="5" min="1" max="50">
+
+            <label>Estilo da questão:</label>
+            <select id="nivel">
+                <option value="Revisão da matéria">Revisão da matéria</option>
+                <option value="Nível concurso" selected>Nível concurso</option>
+                <option value="Nível prova difícil">Nível prova difícil</option>
+            </select>
+
+            <button id="btnGerar" onclick="processarPDF()">Gerar Exercícios</button>
+
+            <div id="status"></div>
+            <div id="progresso">
+                <div id="barra"></div>
+            </div>
+
+            <div id="area"></div>
+
+            <button id="btnCorrigir" onclick="corrigir()" style="display:none">Salvar e Corrigir</button>
+            <button id="btnPDF" onclick="gerarPDFProva()" style="display:none; background: #475569;">📄 Gerar Prova em PDF</button>
+
+            <div id="resultado" class="resultado" style="display:none;"></div>
+        </div>
+
+        <!-- ABA 2: LOJA DE CRÉDITOS -->
+        <div id="tabLoja" class="hidden">
+            <h1>💳 Adicionar Créditos</h1>
+            <p style="text-align:center;color:#64748b">Escolha um pacote e adquira via Mercado Pago com liberação imediata</p>
+            
+            <div class="loja-grid">
+                <div class="pacote-card">
+                    <h4>50 Créditos</h4>
+                    <p>R$ 9,90</p>
+                    <button onclick="comprarCreditos('pacote_50')">Comprar Agora</button>
+                </div>
+                <div class="pacote-card">
+                    <h4>200 Créditos</h4>
+                    <p>R$ 19,90</p>
+                    <button onclick="comprarCreditos('pacote_200')">Comprar Agora</button>
+                </div>
+                <div class="pacote-card">
+                    <h4>500 Créditos</h4>
+                    <p>R$ 29,90</p>
+                    <button onclick="comprarCreditos('pacote_500')">Comprar Agora</button>
+                </div>
+                <div class="pacote-card">
+                    <h4>1000 Créditos</h4>
+                    <p>R$ 49,90</p>
+                    <button onclick="comprarCreditos('pacote_1000')">Comprar Agora</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA 3: ESTATÍSTICAS -->
+        <div id="tabEstatisticas" class="hidden">
+            <h1>📊 Painel de Desempenho</h1>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3 id="statSimulados">0</h3>
+                    <p>Simulados Feitos</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="statMedia">0.0</h3>
+                    <p>Média Geral</p>
+                </div>
+            </div>
+
+            <div class="chart-wrapper">
+                <div class="chart-container">
+                    <canvas id="graficoEvolucao"></canvas>
+                </div>
+            </div>
+            
+            <button onclick="limparHistoricoServidor()" style="background: #ef4444; margin-top: 25px; width: auto; padding: 10px 20px; display: block; margin: 0 auto;">🗑️ Limpar Meu Histórico</button>
+        </div>
+
+        <!-- ABA 4: PAINEL ADMINISTRATIVO -->
+        <div id="tabAdmin" class="hidden">
+            <h1>⚙️ Gestão de Usuários</h1>
+            <p style="text-align:center;color:#64748b;">Gerencie os créditos e perfis dos usuários cadastrados.</p>
+
+            <div class="admin-table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>E-mail</th>
+                            <th>Créditos</th>
+                            <th>Função</th>
+                            <th style="text-align: center;">Ações (Definir Créditos)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaUsuariosAdmin"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+let perguntas=[];
+let corrigindo = false;
+const TOKEN_KEY = "token_jwt_questoes";
+
+window.addEventListener("DOMContentLoaded", () => {
+    let token = localStorage.getItem(TOKEN_KEY);
+    if (token) carregarDadosUsuario(token);
+});
+
+// NAVEGAÇÃO ENTRE ABAS
+function mudarAba(aba, elemento) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    if(elemento) elemento.classList.add('active');
+
+    document.getElementById('tabGerador').classList.add('hidden');
+    document.getElementById('tabLoja').classList.add('hidden');
+    document.getElementById('tabEstatisticas').classList.add('hidden');
+    document.getElementById('tabAdmin').classList.add('hidden');
+
+    if(aba === 'gerador') {
+        document.getElementById('tabGerador').classList.remove('hidden');
+    } else if(aba === 'loja') {
+        document.getElementById('tabLoja').classList.remove('hidden');
+    } else if(aba === 'estatisticas') {
+        document.getElementById('tabEstatisticas').classList.remove('hidden');
+        carregarEstatisticasServidor();
+    } else if(aba === 'admin') {
+        document.getElementById('tabAdmin').classList.remove('hidden');
+        carregarListaUsuariosAdmin();
+    }
+}
+
+function mostrarTelaRegistro(mostrar) {
+    document.getElementById("authErro").innerText = "";
+    document.getElementById("formLoginDiv").classList.toggle("hidden", mostrar);
+    document.getElementById("formRegistroDiv").classList.toggle("hidden", !mostrar);
+    document.getElementById("formEsqueciDiv").classList.add("hidden");
+}
+
+function mostrarEsqueciSenha(mostrar) {
+    document.getElementById("authErro").innerText = "";
+    document.getElementById("formLoginDiv").classList.toggle("hidden", mostrar);
+    document.getElementById("formRegistroDiv").classList.add("hidden");
+    document.getElementById("formEsqueciDiv").classList.toggle("hidden", !mostrar);
+}
+
+async function fazerLogin() {
+    let email = document.getElementById("loginEmail").value;
+    let senha = document.getElementById("loginSenha").value;
+    
+    document.getElementById("authErro").innerText = "";
+
+    try {
+        let res = await fetch('/api/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({email, senha})
+        });
+        let data = await res.json();
+        
+        if(!res.ok) { 
+            document.getElementById("authErro").innerText = data.erro; 
+            return; 
+        }
+        
+        localStorage.setItem(TOKEN_KEY, data.token);
+        
+        document.getElementById("userEmailSpan").innerText = email;
+        document.getElementById("creditosSpan").innerText = data.creditos;
+        
+        if (data.role === 'admin') {
+            document.getElementById("btnTabAdmin").classList.remove("hidden");
+        } else {
+            document.getElementById("btnTabAdmin").classList.add("hidden");
+        }
+
+        document.getElementById("authScreen").classList.add("hidden");
+        document.getElementById("appScreen").classList.remove("hidden");
+
+    } catch(e) { 
+        console.error("Erro no login:", e);
+        document.getElementById("authErro").innerText = "Erro de conexão ao tentar fazer login."; 
+    }
+}
+
+async function fazerRegistro() {
+    let email = document.getElementById("regEmail").value;
+    let senha = document.getElementById("regSenha").value;
+    let confirmarSenha = document.getElementById("regConfirmaSenha").value;
+
+    if (!email || !senha || !confirmarSenha) { document.getElementById("authErro").innerText = "Preencha tudo."; return; }
+    if (senha !== confirmarSenha) { document.getElementById("authErro").innerText = "As senhas não coincidem!"; return; }
+
+    try {
+        let res = await fetch('/api/registrar', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ email, senha, confirmarSenha })
+        });
+        
+        let data = await res.json();
+        if(!res.ok) { document.getElementById("authErro").innerText = data.erro; return; }
+        
+        alert("Conta criada com sucesso! Faça login para continuar.");
+        document.getElementById("loginEmail").value = email;
+        mostrarTelaRegistro(false);
+    } catch(e) { 
+        console.error("Erro detalhado:", e);
+        document.getElementById("authErro").innerText = "Erro: " + e.message; 
+    }
+}
+
+async function carregarDadosUsuario(token) {
+    try {
+        let res = await fetch('/api/creditos', { headers: { 'Authorization': `Bearer ${token}` } });
+        let data = await res.json();
+        
+        if(!res.ok) { 
+            fazerLogout(); 
+            return; 
+        }
+        
+        let emailDigitado = document.getElementById("loginEmail").value;
+        document.getElementById("userEmailSpan").innerText = emailDigitado || "Usuário";
+        document.getElementById("creditosSpan").innerText = data.creditos;
+        
+        if (data.role === 'admin') {
+            document.getElementById("btnTabAdmin").classList.remove("hidden");
+        }
+        
+        document.getElementById("authScreen").classList.add("hidden");
+        document.getElementById("appScreen").classList.remove("hidden");
+    } catch(e) { 
+        console.error("Erro ao carregar dados:", e);
+        fazerLogout(); 
+    }
+}
+
+function fazerLogout() {
+    localStorage.removeItem(TOKEN_KEY);
+    location.reload();
+}
+
+async function solicitarTokenRecuperacao() {
+    let email = document.getElementById("recoveryEmail").value;
+    if(!email) { alert("Informe seu e-mail."); return; }
+    try {
+        let res = await fetch('/api/esqueci-senha', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ email })
+        });
+        let data = await res.json();
+        alert(data.mensagem);
+        if(data.tokenSimuladoParaTeste) document.getElementById("recoveryToken").value = data.tokenSimuladoParaTeste;
+        document.getElementById("blocoRedefinicao").classList.remove("hidden");
+    } catch(e) { alert("Erro de conexão."); }
+}
+
+async function executarRedefinicaoSenha() {
+    let email = document.getElementById("recoveryEmail").value;
+    let token = document.getElementById("recoveryToken").value;
+    let novaSenha = document.getElementById("recoveryNovaSenha").value;
+    let confirmaSenha = document.getElementById("recoveryConfirmaSenha").value;
+
+    if(!email || !token || !novaSenha) { alert("Preencha todos os campos."); return; }
+    if(novaSenha !== confirmaSenha) { alert("As senhas não coincidem!"); return; }
+
+    try {
+        let res = await fetch('/api/redefinir-senha', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ email, token, novaSenha })
+        });
+        let data = await res.json();
+        if(!res.ok) { alert(data.erro); return; }
+        alert(data.mensagem);
+        mostrarEsqueciSenha(false);
+    } catch(e) { alert("Erro de conexão."); }
+}
+
+function abrirModalAlterarSenha() {
+    document.getElementById("painelAlterarSenha").classList.remove("hidden");
+    document.getElementById("msgAlterarSenha").innerText = "";
+    document.getElementById("perfilSenhaAtual").value = "";
+    document.getElementById("perfilNovaSenha").value = "";
+    document.getElementById("perfilConfirmaSenha").value = "";
+}
+
+function fecharModalAlterarSenha() {
+    document.getElementById("painelAlterarSenha").classList.add("hidden");
+}
+
+async function executarAlterarSenhaUsuario() {
+    let senhaAtual = document.getElementById("perfilSenhaAtual").value;
+    let novaSenha = document.getElementById("perfilNovaSenha").value;
+    let confirmarNovaSenha = document.getElementById("perfilConfirmaSenha").value;
+    let msgBox = document.getElementById("msgAlterarSenha");
+
+    msgBox.style.color = "#dc2626";
+    if (!senhaAtual || !novaSenha || !confirmarNovaSenha) {
+        msgBox.innerText = "Preencha todos os campos.";
+        return;
+    }
+    if (novaSenha !== confirmarNovaSenha) {
+        msgBox.innerText = "A nova senha e a confirmação não coincidem.";
+        return;
+    }
+
+    try {
+        let res = await fetch('/api/alterar-senha', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${localStorage.getItem(TOKEN_KEY)}` 
+            },
+            body: JSON.stringify({ senhaAtual, novaSenha, confirmarNovaSenha })
+        });
+        let data = await res.json();
+        if (!res.ok) {
+            msgBox.innerText = data.erro;
+            return;
+        }
+
+        msgBox.style.color = "#16a34a";
+        msgBox.innerText = data.mensagem;
+        setTimeout(() => {
+            fecharModalAlterarSenha();
+        }, 2000);
+    } catch(e) {
+        msgBox.innerText = "Erro de conexão ao alterar a senha.";
+    }
+}
+
+async function comprarCreditos(pacoteId) {
+    let token = localStorage.getItem(TOKEN_KEY);
+    try {
+        let res = await fetch('/api/criar-pagamento', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ pacoteId })
+        });
+        let data = await res.json();
+        if(!res.ok) { alert(data.erro); return; }
+        
+        // Redireciona o usuário para o checkout do Mercado Pago
+        window.location.href = data.init_point;
+    } catch(e) {
+        alert("Erro ao iniciar o pagamento.");
+    }
+}
+
+async function lerPDF(file){
+    let pdf = await pdfjsLib.getDocument(await file.arrayBuffer()).promise;
+    let texto="";
+    for(let i=1;i<=pdf.numPages;i++){
+        let pagina = await pdf.getPage(i);
+        let conteudo = await pagina.getTextContent();
+        texto += conteudo.items.map(item=>item.str).join(" ");
+    }
+    return texto.replace(/\s+/g, ' ').trim();
+}
+
+function atualizarProgresso(percentual, texto){
+    document.getElementById("progresso").style.display="block";
+    document.getElementById("barra").style.width=percentual+"%";
+    document.getElementById("status").innerHTML=texto;
+}
+
+async function processarPDF(){
+    let btnGerar = document.getElementById("btnGerar");
+    try{
+        let quantidade = Number(document.getElementById("quantidade").value);
+        if(quantidade > 50) { alert("O limite máximo é de 50 questões por gerador."); return; }
+
+        btnGerar.disabled = true; btnGerar.innerHTML = "⏳ Processando...";
+        atualizarProgresso(10, "📖 Lendo PDF...");
+
+        let arquivo = document.getElementById("arquivo").files[0];
+        if(!arquivo){ alert("Selecione um PDF"); return; }
+        let texto = await lerPDF(arquivo);
+        if(texto.length < 50){ throw new Error("O PDF não possui texto suficiente."); }
+
+        atualizarProgresso(50, "🤖 IA analisando o PDF...");
+        
+        let nivel = document.getElementById("nivel").value;
+        let token = localStorage.getItem(TOKEN_KEY);
+
+        let respostaServidor = await fetch('/api/gerar-questoes', {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+            body: JSON.stringify({ texto, quantidade, nivel })
+        });
+
+        let dadosServidor = await respostaServidor.json();
+        if(!respostaServidor.ok) throw new Error(dadosServidor.erro);
+
+        perguntas = dadosServidor.questoes;
+        document.getElementById("creditosSpan").innerText = dadosServidor.creditosRestantes;
+
+        mostrarQuestoes();
+        atualizarProgresso(100, "✅ Exercícios criados!");
+        setTimeout(()=>{ document.getElementById("progresso").style.display="none"; }, 1000);
+    } catch(e){
+        document.getElementById("status").innerHTML = "❌ Erro: " + e.message;
+    } finally {
+        btnGerar.disabled = false; btnGerar.innerHTML = "Gerar Exercícios";
+    }
+}
+
+function mostrarQuestoes(){
+    let html="<h2>📝 Exercícios</h2>";
+    perguntas.forEach((p,i)=>{
+        html+=`
+        <div class="questao">
+            <b>Questão ${i+1}</b>
+            <div style="margin-top:6px; display:inline-block; padding:4px 10px; background:#dbeafe; color:#1e40af; border-radius:20px; font-size:12px; font-weight:bold;">
+                📘 ${p.tema}
+            </div>
+            <p style="margin-top:10px">${p.pergunta}</p>
+             ${(p.opcoes || []).map(op=>`
+                <label class="alternativa"><input type="radio" name="q${i}" value="${op.charAt(0)}"> ${op}</label>
+            `).join("")}
+        </div>`;
+    });
+    document.getElementById("area").innerHTML=html;
+    document.getElementById("btnCorrigir").style.display="block";
+    document.getElementById("btnPDF").style.display="block";
+    document.getElementById("resultado").style.display="none";
+}
+
+async function corrigir(){
+    if(corrigindo) return;
+    corrigindo = true;
+    let botao = document.getElementById("btnCorrigir");
+    try {
+        botao.disabled = true; botao.innerHTML = "⏳ Corrigindo...";
+        document.querySelectorAll(".explicacao").forEach(e=>e.remove());
+        let acertos = 0;
+
+        perguntas.forEach((p, i)=>{
+            let selecionada = document.querySelector(`input[name="q${i}"]:checked`);
+            let respostaAluno = selecionada ? selecionada.value : "";
+            
+            document.querySelectorAll(`input[name="q${i}"]`).forEach(input=>{
+                let label = input.parentElement;
+                label.classList.remove("correta", "errada");
+                if(input.value === p.resposta) label.classList.add("correta");
+            });
+
+            if(respostaAluno === p.resposta){ acertos++; }
+            else{
+                if(selecionada) selecionada.parentElement.classList.add("errada");
+                let div = document.createElement("div");
+                div.className = "explicacao";
+                div.innerHTML = `<p><b>✅ Correta:</b> ${p.opcoes.find(x=>x.startsWith(p.resposta)) || ""}</p><hr><p><b>👨‍🏫 Explicação:</b> ${p.explicacao}</p>`;
+                document.querySelectorAll(".questao")[i].appendChild(div);
+            }
+        });
+
+        let nota = (acertos/perguntas.length)*10;
+        let painelResult = document.getElementById("resultado");
+        painelResult.style.display = "block";
+        painelResult.innerHTML = `Resultado: ✅ Acertos: ${acertos}/${perguntas.length} | ⭐ Nota: ${nota.toFixed(1)}`;
+        
+        await fetch('/api/historico', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem(TOKEN_KEY)}` },
+            body: JSON.stringify({ acertos, total: perguntas.length, nota: Number(nota.toFixed(1)) })
+        });
+    } catch(e) { alert("Erro: " + e.message); } 
+    finally { corrigindo=false; botao.disabled=false; botao.innerHTML = "Salvar e Corrigir"; }
+}
+
+function gerarPDFProva(){
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ unit: "mm", format: "a4" });
+    let y = 20;
+
+    function addText(text, size, style, color, indent) {
+        pdf.setFont("helvetica", style); pdf.setFontSize(size); pdf.setTextColor(...color);
+        let lines = pdf.splitTextToSize(text, 170 - indent);
+        if (y + (lines.length * (size * 0.42)) > 277) { pdf.addPage(); y = 20; }
+        pdf.text(lines, 20 + indent, y);
+        y += (lines.length * (size * 0.42)) + 2;
+    }
+
+    pdf.setFont("helvetica", "bold"); pdf.setFontSize(15); pdf.setTextColor(30, 64, 175);
+    pdf.text("SIMULADO AUDITOR - PREF. RIO BRILHANTE", 105, y, { align: "center" }); y += 15;
+
+    perguntas.forEach((q, i) => {
+        addText(`QUESTÃO ${i + 1} [${q.tema}]`, 11, "bold", [30, 64, 175], 0); y += 1;
+        addText(q.pergunta, 10, "normal", [30, 41, 59], 0); y += 2;
+        q.opcoes.forEach(op => { addText(`(   )  ${op}`, 9.5, "normal", [71, 85, 105], 6); }); y += 6; 
+    });
+    pdf.save("Simulado_FAPEC.pdf");
+}
+
+async function carregarEstatisticasServidor() {
+    let token = localStorage.getItem(TOKEN_KEY);
+    try {
+        let res = await fetch('/api/historico', { headers: { 'Authorization': `Bearer ${token}` } });
+        let historico = await res.json();
+        
+        document.getElementById("statSimulados").innerText = historico.length;
+        document.getElementById("statMedia").innerText = historico.length > 0 ? (historico.reduce((acc, curr) => acc + curr.nota, 0) / historico.length).toFixed(1) : "0.0";
+        renderizarGrafico(historico);
+    } catch(e) {}
+}
+
+function renderizarGrafico(historico) {
+    const ctx = document.getElementById('graficoEvolucao').getContext('2d');
+    let meuGrafico = null;
+    // se já existir chart, destrói
+    window.meuGraficoInstancia = window.meuGraficoInstancia || null;
+    if(window.meuGraficoInstancia) window.meuGraficoInstancia.destroy();
+    
+    window.meuGraficoInstancia = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: historico.map((_, i) => `Simulado #${i + 1}`),
+            datasets: [{
+                label: 'Nota alcançada', data: historico.map(h => h.nota),
+                borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, 0.2)', fill: true, tension: 0.3
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 10 } } }
+    });
+}
+
+async function limparHistoricoServidor() {
+    if(confirm("Deseja apagar todo o histórico?")) {
+        await fetch('/api/historico', { method: 'DELETE', headers: { 'Authorization': `Bearer ${localStorage.getItem(TOKEN_KEY)}` }});
+        carregarEstatisticasServidor();
+    }
+}
+
+async function carregarListaUsuariosAdmin() {
+    let token = localStorage.getItem(TOKEN_KEY);
+    let res = await fetch('/api/admin/usuarios', { headers: { 'Authorization': `Bearer ${token}` } });
+    let usuarios = await res.json();
+    if (!res.ok) return;
+
+    let tbody = document.getElementById("tabelaUsuariosAdmin");
+    tbody.innerHTML = "";
+    usuarios.forEach(u => {
+        tbody.innerHTML += `
+            <tr>
+                <td style="color: #64748b;">#${u.id}</td>
+                <td><b>${u.email}</b></td>
+                <td><span style="padding: 3px 8px; border-radius:6px; font-size:11px; font-weight:bold; background: ${u.role === 'admin' ? '#fee2e2;color:#991b1b' : '#f1f5f9;color:#475569'};">${u.role.toUpperCase()}</span></td>
+                <td>
+                    <input type="number" id="inputCreditos_${u.id}" value="${u.creditos}" style="width: 90px; padding: 6px; margin: 0; display: inline-block;">
+                </td>
+                <td style="text-align: center;">
+                    <button onclick="salvarCreditosAdmin(${u.id})" style="width: auto; padding: 6px 14px; margin: 0; font-size: 12px; background: #16a34a;">💾 Salvar</button>
+                </td>
+            </tr>`;
+    });
+}
+
+async function salvarCreditosAdmin(usuarioId) {
+    let token = localStorage.getItem(TOKEN_KEY);
+    let inputVal = document.getElementById(`inputCreditos_${usuarioId}`).value;
+    let creditos = Number(inputVal);
+
+    if (isNaN(creditos)) {
+        alert("Digite um valor numérico válido.");
+        return;
+    }
+
+    let res = await fetch('/api/admin/creditos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ usuarioId, creditos })
+    });
+    let data = await res.json();
+    if (!res.ok) { alert(data.erro); return; }
+
+    alert("Créditos atualizados com sucesso!");
+    carregarListaUsuariosAdmin();
+}
+</script>
+</body>
+</html>
