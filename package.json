@@ -1,0 +1,16 @@
+{
+  "name": "simulador-auditor",
+  "version": "1.0.0",
+  "description": "Simulador de questões FAPEC",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "mercadopago": "^2.0.8",
+    "sqlite3": "^5.1.7"
+  }
+}
