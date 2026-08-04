@@ -705,7 +705,7 @@ function gerarPDFProva(){
     }
 
     pdf.setFont("helvetica", "bold"); pdf.setFontSize(15); pdf.setTextColor(30, 64, 175);
-    pdf.text("SIMULADO AUDITOR - PREF. RIO BRILHANTE", 105, y, { align: "center" }); y += 15;
+    pdf.text("SIMULADO FISCAL / JURIDICO", 105, y, { align: "center" }); y += 15;
 
     perguntas.forEach((q, i) => {
         addText(`QUESTÃO ${i + 1} [${q.tema}]`, 11, "bold", [30, 64, 175], 0); y += 1;
