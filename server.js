@@ -19,7 +19,6 @@ const mpClient = new MercadoPagoConfig({ accessToken: 'APP_USR-5232629439354822-
 app.use(express.json({ limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-const path = require('path');
 
 // Se estiver no Render, usa o diretório do disco persistente (/data). Caso contrário, usa a pasta local.
 const dbPath = process.env.RENDER ? '/data/banco.db' : './banco.db';
