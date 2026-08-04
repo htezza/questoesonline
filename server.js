@@ -115,6 +115,8 @@ app.post('/api/criar-pagamento', verificarToken, async (req, res) => {
 
     try {
         let preference = new Preference(mpClient);
+        
+        // Pegando o host de forma segura ou usando o seu domínio direto do Render
         let hostUrl = req.protocol + '://' + req.get('host');
 
         let respostaMp = await preference.create({
@@ -136,8 +138,8 @@ app.post('/api/criar-pagamento', verificarToken, async (req, res) => {
 
         res.json({ init_point: respostaMp.init_point });
     } catch(e) {
-        console.error("Erro detalhado do MP:", e); // Adicione isso para ver o log exato
-        res.status(500).json({ erro: "Erro ao criar preferência de pagamento." });
+        console.error("Erro detalhado do MP:", e);
+        res.status(500).json({ erro: "Erro ao criar preferência de pagamento: " + (e.message || JSON.stringify(e)) });
     }
 });
 
