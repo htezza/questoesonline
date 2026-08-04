@@ -19,10 +19,14 @@ const mpClient = new MercadoPagoConfig({ accessToken: 'APP_USR-5232629439354822-
 app.use(express.json({ limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Banco de dados SQLite
-const db = new sqlite3.Database('./banco.db', (err) => {
+const path = require('path');
+
+// Se estiver no Render, usa o diretório do disco persistente (/data). Caso contrário, usa a pasta local.
+const dbPath = process.env.RENDER ? '/data/banco.db' : './banco.db';
+
+const db = new sqlite3.Database(dbPath, (err) => {
     if (err) console.error("Erro ao abrir o banco:", err.message);
-    else console.log("Conectado ao banco de dados SQLite.");
+    else console.log(`Conectado ao banco de dados SQLite em: ${dbPath}`);
 });
 
 db.serialize(() => {
