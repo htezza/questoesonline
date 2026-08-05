@@ -7,7 +7,12 @@ const { MercadoPagoConfig, Preference } = require('mercadopago');
 
 const app = express();
 const PORTA = process.env.PORT || 10000;
-const SECRET_JWT = "Tezzah917!";
+
+const SECRET_JWT = process.env.SECRET_JWT;
+if (!SECRET_JWT) {
+    console.error("ERRO CRÍTICO: A variável de ambiente SECRET_JWT não está definida.");
+    process.exit(1);
+}
 
 // COLE SUA CHAVE DO GEMINI AQUI:
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
