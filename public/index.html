@@ -395,6 +395,16 @@ const TOKEN_KEY = "token_jwt_questoes";
 window.addEventListener("DOMContentLoaded", () => {
     let token = localStorage.getItem(TOKEN_KEY);
     if (token) carregarDadosUsuario(token);
+
+    // Adiciona o evento de pressionar Enter nos campos de login
+    const dispararLoginComEnter = (event) => {
+        if (event.key === "Enter") {
+            fazerLogin();
+        }
+    };
+    
+    document.getElementById("loginEmail").addEventListener("keypress", dispararLoginComEnter);
+    document.getElementById("loginSenha").addEventListener("keypress", dispararLoginComEnter);
 });
 
 // NAVEGAÇÃO ENTRE ABAS
@@ -633,7 +643,7 @@ async function comprarCreditos(pacoteId) {
         let data = await res.json();
         if(!res.ok) { alert(data.erro); return; }
         
-        window.location.href = data.init_point;
+        window.open(data.init_point, '_blank');
     } catch(e) {
         alert("Erro ao iniciar o pagamento.");
     }
