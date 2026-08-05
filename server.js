@@ -408,7 +408,7 @@ Texto: ${textoDistribuido}`;
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: { responseMimeType: "application/json", temperature: 0.7 }
+                        generationConfig: { responseMimeType: "application/json", temperature: 0.5 }
                     })
                 }
             );
@@ -416,9 +416,14 @@ Texto: ${textoDistribuido}`;
             if (!respostaApi.ok) throw new Error("A API recusou processar o arquivo.");
 
             let dados = await respostaApi.json();
+            if (!dados.candidates || !dados.candidates[0]?.content?.parts[0]?.text) {
+                throw new Error("A IA retornou uma estrutura vazia.");
+            }
+            
             let resultado = dados.candidates[0].content.parts[0].text;
 
-            resultado = resultado.replace(/```json/g, '').replace(/```/g, '').trim();
+            // Remove blocos de código markdown caso venham na resposta
+            resultado = resultado.replace(/```json/gi, '').replace(/```/g, '').trim();
 
             let inicioJson = resultado.indexOf('[');
             let fimJson = resultado.lastIndexOf(']');
