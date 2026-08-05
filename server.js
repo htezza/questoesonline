@@ -424,7 +424,7 @@ if (!dados.candidates || !dados.candidates[0]?.content?.parts[0]?.text) {
 
 let resultado = dados.candidates[0].content.parts[0].text;
 
-// Remove marcações de bloco de código markdown que a IA costuma mandar
+// Remove blocos de markdown e espaços desnecessários
 resultado = resultado.replace(/```json/gi, '').replace(/```/g, '').trim();
 
 let inicioJson = resultado.indexOf('[');
@@ -440,8 +440,15 @@ let questoes;
 try {
     questoes = JSON.parse(stringJsonLimpa);
 } catch (parseErr) {
-    console.error("Erro ao converter JSON da IA:", stringJsonLimpa);
-    throw new Error("A IA gerou uma resposta corrompida. Tente novamente.");
+    // TENTATIVA DE RECUPERAÇÃO AUTOMÁTICA:
+    // Se falhar, tenta limpar vírgulas flutuantes no final do JSON que a IA às vezes deixa
+    try {
+        let corRIGIDO = stringJsonLimpa.replace(/,\s*([\]}])/g, '$1');
+        questoes = JSON.parse(corRIGIDO);
+    } catch (segundoErro) {
+        console.error("Erro crítico ao converter JSON da IA:", stringJsonLimpa);
+        throw new Error("A IA gerou uma resposta corrompida. Tente novamente.");
+    }
 }
 
             questoes = questoes.slice(0, quantidade);
