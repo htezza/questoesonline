@@ -440,10 +440,14 @@ let questoes;
 try {
     questoes = JSON.parse(stringJsonLimpa);
 } catch (parseErr) {
-    // TENTATIVA DE RECUPERAÇÃO AUTOMÁTICA:
-    // Se falhar, tenta limpar vírgulas flutuantes no final do JSON que a IA às vezes deixa
     try {
+        // Tenta corrigir vírgulas flutuantes e colchetes duplos no final
         let corRIGIDO = stringJsonLimpa.replace(/,\s*([\]}])/g, '$1');
+        // Se houver fechamento duplicado no final (ex: ]] ), corta para o último válido
+        let ultimoColchete = corRIGIDO.lastIndexOf(']');
+        if (ultimoColchete !== -1) {
+            corRIGIDO = corRIGIDO.substring(0, ultimoColchete + 1);
+        }
         questoes = JSON.parse(corRIGIDO);
     } catch (segundoErro) {
         console.error("Erro crítico ao converter JSON da IA:", stringJsonLimpa);
