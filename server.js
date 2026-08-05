@@ -377,9 +377,28 @@ Texto: ${textoDistribuido}`;
 
             let dados = await respostaApi.json();
             let resultado = dados.candidates[0].content.parts[0].text;
+
+            // Limpeza preventiva de blocos de markdown caso a IA envie
+            resultado = resultado.replace(/```json/g, '').replace(/```/g, '').trim();
+
             let inicioJson = resultado.indexOf('[');
             let fimJson = resultado.lastIndexOf(']');
-            let questoes = JSON.parse(resultado.substring(inicioJson, fimJson + 1)).slice(0, quantidade);
+
+            if (inicioJson === -1 || fimJson === -1) {
+                throw new Error("A IA não retornou um formato de lista JSON válido.");
+            }
+
+            let stringJsonLimpa = resultado.substring(inicioJson, fimJson + 1);
+            
+            let questoes;
+            try {
+                questoes = JSON.parse(stringJsonLimpa);
+            } catch (parseErr) {
+                console.error("Erro ao converter JSON da IA:", stringJsonLimpa);
+                throw new Error("A IA gerou uma resposta corrompida. Tente novamente.");
+            }
+
+            questoes = questoes.slice(0, quantidade);
 
             db.run(`UPDATE usuarios SET creditos = creditos - ? WHERE id = ?`, [questoes.length, usuarioId]);
 
