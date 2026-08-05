@@ -4,8 +4,26 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const path = require('path');
 const { MercadoPagoConfig, Preference } = require('mercadopago');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
+// Limite para rotas de autenticação (evita força bruta no login/registro)
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutos
+    max: 10, // Limite de 10 tentativas por IP
+    message: { erro: 'Muitas tentativas de login ou cadastro. Tente novamente mais tarde.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+// Limite para a geração de IA (evita esgotar a cota da API do Gemini)
+const iaLimiter = rateLimit({
+    windowMs: 5 * 60 * 1000, // 5 minutos
+    max: 20, // Limite de 20 requisições por IP
+    message: { erro: 'Muitas requisições de IA em pouco tempo. Aguarde alguns minutos.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
 const PORTA = process.env.PORT || 10000;
 
 const SECRET_JWT = process.env.SECRET_JWT;
@@ -181,7 +199,7 @@ app.post('/api/webhook/pagamento', async (req, res) => {
     }
 });
 
-app.post('/api/registrar', async (req, res) => {
+app.post('/api/registrar', authLimiter, async (req, res) => {
     let { email, senha, confirmarSenha } = req.body;
     if (!email || !senha || !confirmarSenha) return res.status(400).json({ erro: "Preencha todos os campos." });
     if (senha !== confirmarSenha) return res.status(400).json({ erro: "As senhas não coincidem." });
@@ -198,7 +216,7 @@ app.post('/api/registrar', async (req, res) => {
     }
 });
 
-app.post('/api/login', (req, res) => {
+app.post('/api/login', authLimiter, (req, res) => {
     let { email, senha } = req.body;
     if (!email || !senha) return res.status(400).json({ erro: "Preencha todos os campos." });
     
@@ -318,7 +336,7 @@ app.delete('/api/historico', verificarToken, (req, res) => {
     });
 });
 
-app.post('/api/gerar-questoes', verificarToken, async (req, res) => {
+app.post('/api/gerar-questoes', verificarToken, iaLimiter, async (req, res) => {
     let { texto, quantidade, nivel } = req.body;
     const usuarioId = req.usuarioId;
 
