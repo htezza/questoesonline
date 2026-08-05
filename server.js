@@ -7,6 +7,8 @@ const { MercadoPagoConfig, Preference } = require('mercadopago');
 const rateLimit = require('express-rate-limit');
 
 const app = express();
+app.set('trust proxy', 1);
+
 // Limite para rotas de autenticação (evita força bruta no login/registro)
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutos
