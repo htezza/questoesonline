@@ -14,6 +14,8 @@ if (!SECRET_JWT) {
     process.exit(1);
 }
 
+const emProcessamento = new Set(); // Lista para controlar quem está gerando questões no momento
+
 // COLE SUA CHAVE DO GEMINI AQUI:
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const MODELO_GEMINI = "gemini-3.1-flash-lite";
@@ -320,12 +322,28 @@ app.post('/api/gerar-questoes', verificarToken, async (req, res) => {
     let { texto, quantidade, nivel } = req.body;
     const usuarioId = req.usuarioId;
 
-    if (!texto || !quantidade || !nivel) return res.status(400).json({ erro: "Parâmetros incompletos." });
-    if (quantidade > 50) return res.status(400).json({ erro: "O limite máximo é de 50 questões por gerador." });
+    // Proteção contra múltiplas requisições simultâneas do mesmo usuário
+    if (emProcessamento.has(usuarioId)) {
+        return res.status(429).json({ erro: "Você já possui uma geração de questões em andamento. Aguarde terminar." });
+    }
+    emProcessamento.add(usuarioId);
+
+    if (!texto || !quantidade || !nivel) {
+        emProcessamento.delete(usuarioId);
+        return res.status(400).json({ erro: "Parâmetros incompletos." });
+    }
+    if (quantidade > 50) {
+        emProcessamento.delete(usuarioId);
+        return res.status(400).json({ erro: "O limite máximo é de 50 questões por gerador." });
+    }
 
     db.get(`SELECT creditos FROM usuarios WHERE id = ?`, [usuarioId], async (err, row) => {
-        if (err || !row) return res.status(500).json({ erro: "Erro ao consultar créditos." });
+        if (err || !row) {
+            emProcessamento.delete(usuarioId);
+            return res.status(500).json({ erro: "Erro ao consultar créditos." });
+        }
         if (row.creditos < quantidade) {
+            emProcessamento.delete(usuarioId);
             return res.status(400).json({ erro: `Créditos insuficientes! Você precisa de ${quantidade}, mas possui ${row.creditos}. Adquira mais créditos na aba correspondente.` });
         }
 
@@ -344,7 +362,6 @@ app.post('/api/gerar-questoes', verificarToken, async (req, res) => {
                 }
             }
             let textoDistribuido = trechos.join("\n\n");
-
                       
             let prompt = `Atue como uma banca examinadora de alto nível especializada em concursos públicos para carreiras jurídicas e fiscais 
 (como Auditor Fiscal, Procurador Municipal/Estadual, Analista Jurídico e Controlador). 
@@ -383,7 +400,6 @@ Texto: ${textoDistribuido}`;
             let dados = await respostaApi.json();
             let resultado = dados.candidates[0].content.parts[0].text;
 
-            // Limpeza preventiva de blocos de markdown caso a IA envie
             resultado = resultado.replace(/```json/g, '').replace(/```/g, '').trim();
 
             let inicioJson = resultado.indexOf('[');
@@ -413,6 +429,9 @@ Texto: ${textoDistribuido}`;
 
         } catch (error) {
             res.status(500).json({ erro: "Erro ao processar: " + error.message });
+        } finally {
+            // Libera a trava para que o usuário possa fazer novas requisições futuramente
+            emProcessamento.delete(usuarioId);
         }
     });
 });
