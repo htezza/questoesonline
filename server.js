@@ -410,7 +410,7 @@ Texto: ${textoDistribuido}`;
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: { responseMimeType: "application/json", temperature: 0.5 }
+                        generationConfig: { responseMimeType: "application/json", temperature: 0.3 }
                     })
                 }
             );
