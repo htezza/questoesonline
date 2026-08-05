@@ -410,7 +410,28 @@ Texto: ${textoDistribuido}`;
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: { responseMimeType: "application/json", temperature: 0.3 }
+                        generationConfig: { 
+                            temperature: 0.5,
+                            responseMimeType: "application/json",
+                            responseSchema: {
+                                type: "ARRAY",
+                                description: "Lista de questões geradas",
+                                items: {
+                                    type: "OBJECT",
+                                    properties: {
+                                        tema: { type: "STRING" },
+                                        pergunta: { type: "STRING" },
+                                        opcoes: {
+                                            type: "ARRAY",
+                                            items: { type: "STRING" }
+                                        },
+                                        resposta: { type: "STRING" },
+                                        explicacao: { type: "STRING" }
+                                    },
+                                    required: ["tema", "pergunta", "opcoes", "resposta", "explicacao"]
+                                }
+                            }
+                        }
                     })
                 }
             );
@@ -418,42 +439,12 @@ Texto: ${textoDistribuido}`;
             if (!respostaApi.ok) throw new Error("A API recusou processar o arquivo.");
 
             let dados = await respostaApi.json();
-if (!dados.candidates || !dados.candidates[0]?.content?.parts[0]?.text) {
-    throw new Error("A IA retornou uma estrutura vazia.");
-}
+            if (!dados.candidates || !dados.candidates[0]?.content?.parts[0]?.text) {
+                throw new Error("A IA retornou uma estrutura vazia.");
+            }
 
-let resultado = dados.candidates[0].content.parts[0].text;
-
-// Remove blocos de markdown e espaços desnecessários
-resultado = resultado.replace(/```json/gi, '').replace(/```/g, '').trim();
-
-let inicioJson = resultado.indexOf('[');
-let fimJson = resultado.lastIndexOf(']');
-
-if (inicioJson === -1 || fimJson === -1) {
-    throw new Error("A IA não retornou um formato de lista JSON válido.");
-}
-
-let stringJsonLimpa = resultado.substring(inicioJson, fimJson + 1);
-
-let questoes;
-try {
-    questoes = JSON.parse(stringJsonLimpa);
-} catch (parseErr) {
-    try {
-        // Tenta corrigir vírgulas flutuantes e colchetes duplos no final
-        let corRIGIDO = stringJsonLimpa.replace(/,\s*([\]}])/g, '$1');
-        // Se houver fechamento duplicado no final (ex: ]] ), corta para o último válido
-        let ultimoColchete = corRIGIDO.lastIndexOf(']');
-        if (ultimoColchete !== -1) {
-            corRIGIDO = corRIGIDO.substring(0, ultimoColchete + 1);
-        }
-        questoes = JSON.parse(corRIGIDO);
-    } catch (segundoErro) {
-        console.error("Erro crítico ao converter JSON da IA:", stringJsonLimpa);
-        throw new Error("A IA gerou uma resposta corrompida. Tente novamente.");
-    }
-}
+            // Como a API garante o formato, o parse direto funciona sem falhas e sem códigos malabaristas
+            let questoes = JSON.parse(dados.candidates[0].content.parts[0].text);
 
             questoes = questoes.slice(0, quantidade);
 
