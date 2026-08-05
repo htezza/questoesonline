@@ -418,31 +418,31 @@ Texto: ${textoDistribuido}`;
             if (!respostaApi.ok) throw new Error("A API recusou processar o arquivo.");
 
             let dados = await respostaApi.json();
-            if (!dados.candidates || !dados.candidates[0]?.content?.parts[0]?.text) {
-                throw new Error("A IA retornou uma estrutura vazia.");
-            }
-            
-            let resultado = dados.candidates[0].content.parts[0].text;
+if (!dados.candidates || !dados.candidates[0]?.content?.parts[0]?.text) {
+    throw new Error("A IA retornou uma estrutura vazia.");
+}
 
-            // Remove blocos de código markdown caso venham na resposta
-            resultado = resultado.replace(/```json/gi, '').replace(/```/g, '').trim();
+let resultado = dados.candidates[0].content.parts[0].text;
 
-            let inicioJson = resultado.indexOf('[');
-            let fimJson = resultado.lastIndexOf(']');
+// Remove marcações de bloco de código markdown que a IA costuma mandar
+resultado = resultado.replace(/```json/gi, '').replace(/```/g, '').trim();
 
-            if (inicioJson === -1 || fimJson === -1) {
-                throw new Error("A IA não retornou um formato de lista JSON válido.");
-            }
+let inicioJson = resultado.indexOf('[');
+let fimJson = resultado.lastIndexOf(']');
 
-            let stringJsonLimpa = resultado.substring(inicioJson, fimJson + 1);
-            
-            let questoes;
-            try {
-                questoes = JSON.parse(stringJsonLimpa);
-            } catch (parseErr) {
-                console.error("Erro ao converter JSON da IA:", stringJsonLimpa);
-                throw new Error("A IA gerou uma resposta corrompida. Tente novamente.");
-            }
+if (inicioJson === -1 || fimJson === -1) {
+    throw new Error("A IA não retornou um formato de lista JSON válido.");
+}
+
+let stringJsonLimpa = resultado.substring(inicioJson, fimJson + 1);
+
+let questoes;
+try {
+    questoes = JSON.parse(stringJsonLimpa);
+} catch (parseErr) {
+    console.error("Erro ao converter JSON da IA:", stringJsonLimpa);
+    throw new Error("A IA gerou uma resposta corrompida. Tente novamente.");
+}
 
             questoes = questoes.slice(0, quantidade);
 
