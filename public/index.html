@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>VenceConcursos - Portal de Questões</title>
+<title>Questões - Estude Com Foco</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -10,358 +10,147 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-    /* === Tipografia Inspirada em Grandes Portais de Concursos === */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Merriweather:ital,wght@0,700;1,400&display=swap');
+    /* === Tipografia Moderna === */
+    @import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700&family=Lato:wght@400;700&display=swap');
 
     *{ box-sizing:border-box; }
-    
     body{
-        font-family: 'Inter', sans-serif;
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        min-height: 100vh;
-        padding: 20px 10px;
+        font-family: 'Lato', sans-serif;
+        background-color: #f0f2f5;
+        padding: 10px;
         color: #334155;
         margin: 0;
         -webkit-text-size-adjust: 100%;
     }
 
     h1, h2, h3 {
-        font-family: 'Inter', sans-serif;
-        color: #0f172a;
+        font-family: 'Roboto Slab', serif;
+        color: #1e3a8a;
         margin: 0 0 15px 0;
-        font-weight: 800;
     }
 
     .container{
         max-width: 1000px;
         width: 100%;
-        margin: 20px auto;
-        background: #ffffff;
+        margin: 40px auto;
+        background: white;
         padding: 0;
-        border-radius: 20px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        border-radius: 16px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
         overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    /* === Banner Superior Focado em Concurseiros === */
+    /* === Banner Superior === */
     .banner-login {
-        height: 200px;
-        background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(30, 58, 138, 0.88)), url('https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=2000&auto=format&fit=crop');
+        height: 160px;
+        background-image: url('https://images.unsplash.com/photo-1589829085413-56de89184d95?q=80&w=2000&auto=format&fit=crop');
         background-size: cover;
         background-position: center;
         position: relative;
         display: flex;
-        flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 0 20px;
-        border-bottom: 4px solid #f59e0b;
+    }
+
+    .banner-login::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: linear-gradient(0deg, rgba(30,58,138,0.95) 0%, rgba(30,58,138,0.6) 100%);
     }
 
     .banner-login h1 {
-        color: #ffffff;
+        color: white;
         z-index: 1;
-        font-size: 32px;
-        letter-spacing: -0.5px;
-        margin: 0 0 8px 0;
+        font-size: 26px;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        margin: 0;
         text-align: center;
-        font-weight: 800;
+        padding: 0 15px;
     }
 
-    .banner-sub {
-        color: #cbd5e1;
-        font-size: 14px;
-        z-index: 1;
-        font-weight: 500;
-        text-align: center;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-    }
-
-    /* === Área de Login Sofisticada === */
+    /* === Área de Login Ajustada === */
     #authScreen {
         padding: 40px;
-        background: #ffffff;
     }
 
-    label{ 
-        display: block; 
-        font-weight: 700; 
-        font-size: 13px; 
-        margin-top: 18px; 
-        color: #334155; 
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
+    label{ display:block; font-weight:700; font-size:14px; margin-top:15px; color:#475569; }
     input, select{
-        width: 100%; 
-        padding: 14px 16px; 
-        border-radius: 10px; 
-        border: 2px solid #e2e8f0; 
-        font-size: 15px; 
-        margin-top: 6px; 
-        background: #f8fafc;
-        color: #0f172a;
-        font-family: 'Inter', sans-serif;
-        transition: all 0.25s ease-in-out;
+        width:100%; padding:12px 15px; border-radius:8px; border:1px solid #cbd5e1; font-size:14px; margin-top:6px; background:#f8fafc;
+        transition: all 0.3s ease;
     }
-    
-    input:focus, select:focus{ 
-        outline: none; 
-        border-color: #2563eb; 
-        background: #ffffff; 
-        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12); 
-    }
+    input:focus, select:focus{ outline:none; border-color:#2563eb; background:white; box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
     
     button{
-        width: 100%; 
-        padding: 15px; 
-        margin-top: 20px; 
-        border: none; 
-        border-radius: 10px;
-        background: linear-gradient(135deg, #1e3a8a, #1d4ed8);
-        color: white; 
-        font-family: 'Inter', sans-serif; 
-        font-size: 16px; 
-        font-weight: 700; 
-        cursor: pointer; 
-        transition: all 0.25s ease;
-        box-shadow: 0 4px 12px rgba(30, 58, 138, 0.25);
+        width:100%; padding:14px; margin-top:15px; border:none; border-radius:8px;
+        background: linear-gradient(135deg, #1e3a8a, #1e40af);
+        color:white; font-family: 'Lato', sans-serif; font-size:15px; font-weight:bold; cursor:pointer; transition:all 0.3s ease;
     }
-    
-    button:hover:not(:disabled){ 
-        transform: translateY(-2px); 
-        box-shadow: 0 6px 20px rgba(30, 58, 138, 0.35); 
-        background: linear-gradient(135deg, #1d4ed8, #1e40af);
-    }
-    
-    button:disabled { 
-        background: #cbd5e1; 
-        color: #64748b; 
-        cursor: not-allowed; 
-        transform: none; 
-        box-shadow: none; 
-    }
+    button:hover:not(:disabled){ transform:translateY(-2px); box-shadow: 0 4px 15px rgba(30,58,138,0.4); }
+    button:disabled { background: #cbd5e1; color: #64748b; cursor: not-allowed; transform: none; box-shadow: none; }
 
     .btn-secondary {
         background: linear-gradient(135deg, #059669, #047857);
-        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
     }
-    
-    .btn-secondary:hover:not(:disabled){ 
-        box-shadow: 0 6px 20px rgba(5, 150, 105, 0.35); 
-        background: linear-gradient(135deg, #047857, #065f46);
-    }
+    .btn-secondary:hover:not(:disabled){ box-shadow: 0 4px 15px rgba(5,150,105,0.4); }
 
-    #authErro{ 
-        color: #dc2626; 
-        background: #fef2f2;
-        border: 1px solid #fca5a5;
-        padding: 12px;
-        border-radius: 8px;
-        text-align: center; 
-        font-weight: 600; 
-        margin-bottom: 20px; 
-        font-size: 14px; 
-    }
+    #authErro{ color: #dc2626; text-align:center; font-weight:bold; margin-bottom: 10px; font-size:14px; }
 
     /* Estilos da Tela Interna e Componentes */
-    .app-inner-content { padding: 35px; }
+    .app-inner-content { padding: 30px; }
+    p{ font-size:15px; color: #64748b; line-height: 1.5; }
     
-    p{ font-size: 15px; color: #64748b; line-height: 1.6; }
-    
-    .tab-nav { 
-        display: flex; 
-        gap: 10px; 
-        margin-bottom: 30px; 
-        border-bottom: 2px solid #f1f5f9; 
-        padding-bottom: 15px; 
-        flex-wrap: wrap; 
-        justify-content: center; 
-    }
-    
-    .tab-btn { 
-        background: #f8fafc; 
-        color: #475569; 
-        padding: 10px 18px; 
-        border-radius: 10px; 
-        border: 1px solid #e2e8f0; 
-        font-weight: 600; 
-        cursor: pointer; 
-        width: auto; 
-        margin: 0; 
-        font-size: 14px; 
-        transition: all 0.25s; 
-        box-shadow: none;
-    }
-    
-    .tab-btn:hover {
-        background: #f1f5f9;
-        transform: none;
-        box-shadow: none;
-        color: #1e3a8a;
-    }
+    .tab-nav { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; flex-wrap: wrap; justify-content: center; }
+    .tab-btn { background: #f1f5f9; color: #64748b; padding: 8px 14px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; width: auto; margin: 0; font-size: 13px; transition: all 0.3s; }
+    .tab-btn.active { background: #2563eb; color: white; box-shadow: 0 4px 12px rgba(37,99,235,0.25); }
 
-    .tab-btn.active { 
-        background: #1e3a8a; 
-        color: white; 
-        border-color: #1e3a8a;
-        box-shadow: 0 4px 15px rgba(30, 58, 138, 0.3); 
-    }
+    #status{ margin-top:15px; padding:12px; border-radius:10px; background:#eff6ff; font-size:14px; font-weight:bold; text-align:center; color: #1e40af; word-break: break-word; }
+    .questao{ background:#f8fafc; border-radius:12px; padding:15px; margin-top:15px; border: 1px solid #e2e8f0; border-left: 4px solid #2563eb; }
+    .questao b{ font-size:15px; color:#1e40af; }
+    .questao p{ font-size:14px; margin:8px 0; word-break: break-word; }
+    .questao label{ font-weight:normal; font-size:13px; margin:6px 0; padding:10px 12px; border-radius:8px; background:white; cursor:pointer; display:block; border: 1px solid #e2e8f0; transition: background 0.2s; word-break: break-word; }
+    .questao label:hover{ background:#f1f5f9; border-color: #cbd5e1; }
+    .questao input{ width:auto; margin-right:10px; display: inline-block; }
 
-    #status{ 
-        margin-top: 20px; 
-        padding: 14px; 
-        border-radius: 10px; 
-        background: #eff6ff; 
-        font-size: 14px; 
-        font-weight: 600; 
-        text-align: center; 
-        color: #1e40af; 
-        border: 1px solid #bfdbfe;
-        word-break: break-word; 
-    }
-    
-    .questao{ 
-        background: #f8fafc; 
-        border-radius: 14px; 
-        padding: 20px; 
-        margin-top: 20px; 
-        border: 1px solid #e2e8f0; 
-        border-left: 5px solid #2563eb; 
-        box-shadow: 0 2px 4px rgba(0,0,0,0.01);
-    }
-    
-    .questao b{ font-size: 16px; color: #1e3a8a; }
-    
-    .questao p{ font-size: 15px; margin: 10px 0; color: #1e293b; word-break: break-word; }
-    
-    .questao label{ 
-        font-weight: normal; 
-        font-size: 14px; 
-        margin: 8px 0; 
-        padding: 12px 16px; 
-        border-radius: 10px; 
-        background: white; 
-        cursor: pointer; 
-        display: block; 
-        border: 1px solid #cbd5e1; 
-        transition: all 0.2s; 
-        color: #334155;
-        word-break: break-word; 
-    }
-    
-    .questao label:hover{ 
-        background: #f1f5f9; 
-        border-color: #94a3b8; 
-    }
-    
-    .questao input{ width: auto; margin-right: 12px; display: inline-block; accent-color: #2563eb; }
+    .resultado{ margin-top:20px; padding:15px; background:#f0fdf4; border: 1px solid #bbf7d0; border-radius:12px; text-align:center; font-size:16px; font-weight:bold; color:#166534; word-break: break-word; }
+    .alternativa.correta{ background:#f0fdf4 !important; border-color:#22c55e !important; border-left:4px solid #16a34a !important; }
+    .alternativa.errada{ background:#fef2f2 !important; border-color:#f87171 !important; border-left:4px solid #dc2626 !important; }
+    .explicacao{ margin-top:12px; padding:12px; background:#eff6ff; border: 1px solid #bfdbfe; border-radius:10px; font-size:14px; color:#1e3a8a; word-break: break-word; }
 
-    .resultado{ 
-        margin-top: 25px; 
-        padding: 20px; 
-        background: #f0fdf4; 
-        border: 1px solid #bbf7d0; 
-        border-radius: 12px; 
-        text-align: center; 
-        font-size: 18px; 
-        font-weight: 700; 
-        color: #166534; 
-        box-shadow: 0 4px 12px rgba(22, 101, 52, 0.05);
-        word-break: break-word; 
-    }
-    
-    .alternativa.correta{ background: #f0fdf4 !important; border-color: #22c55e !important; border-left: 4px solid #16a34a !important; font-weight: 600; color: #14532d !important; }
-    .alternativa.errada{ background: #fef2f2 !important; border-color: #f87171 !important; border-left: 4px solid #dc2626 !important; color: #7f1d1d !important; }
-    
-    .explicacao{ 
-        margin-top: 15px; 
-        padding: 15px; 
-        background: #eff6ff; 
-        border: 1px solid #bfdbfe; 
-        border-radius: 10px; 
-        font-size: 14px; 
-        color: #1e3a8a; 
-        word-break: break-word; 
-    }
-
-    #progresso{ width: 100%; height: 10px; background: #e2e8f0; border-radius: 20px; overflow: hidden; margin-top: 20px; display: none; }
-    #barra{ width: 0%; height: 100%; background: linear-gradient(90deg, #2563eb, #22c55e); transition: width .4s; }
+    #progresso{ width:100%; height:8px; background:#e2e8f0; border-radius:20px; overflow:hidden; margin-top:15px; display:none; }
+    #barra{ width:0%; height:100%; background:linear-gradient(90deg,#2563eb,#22c55e); transition:width .4s; }
     .hidden { display: none !important; }
 
-    .user-bar { 
-        background: linear-gradient(135deg, #f8fafc, #f1f5f9); 
-        padding: 15px 20px; 
-        border-radius: 14px; 
-        margin-bottom: 25px; 
-        display: flex; 
-        justify-content: space-between; 
-        align-items: center; 
-        font-size: 14px; 
-        border: 1px solid #e2e8f0; 
-        flex-wrap: wrap; 
-        gap: 12px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-    }
-    
-    .user-bar span { word-break: break-all; color: #334155; }
+    .user-bar { background: #f8fafc; padding: 12px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; border: 1px solid #e2e8f0; flex-wrap: wrap; gap: 8px;}
+    .user-bar span { word-break: break-all; }
 
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 25px; }
-    
-    .stat-card { 
-        background: #ffffff; 
-        padding: 20px; 
-        border-radius: 14px; 
-        text-align: center; 
-        border: 1px solid #e2e8f0; 
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); 
-        border-top: 4px solid #2563eb;
-    }
-    
-    .stat-card h3 { margin: 0; color: #1e3a8a; font-size: 28px; font-weight: 800; }
-    .stat-card p { margin: 8px 0 0 0; color: #64748b; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .stat-card { background: linear-gradient(135deg, #f8fafc, #f1f5f9); padding: 15px; border-radius: 12px; text-align: center; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
+    .stat-card h3 { margin: 0; color: #2563eb; font-size: 24px; font-weight: 700; }
+    .stat-card p { margin: 6px 0 0 0; color: #64748b; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
 
-    .chart-wrapper { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
-    .chart-container { position: relative; width: 100%; height: 260px; margin: auto; }
+    .chart-wrapper { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
+    .chart-container { position: relative; width: 100%; height: 250px; margin: auto; }
 
-    .admin-table-wrapper { overflow-x: auto; margin-top: 20px; -webkit-overflow-scrolling: touch; }
-    .admin-table { width: 100%; min-width: 500px; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; }
-    .admin-table th { background: #f8fafc; color: #334155; padding: 14px; text-align: left; font-size: 13px; font-weight: 700; border-bottom: 2px solid #e2e8f0; }
-    .admin-table td { padding: 14px; font-size: 14px; border-bottom: 1px solid #f1f5f9; color: #334155; }
+    .admin-table-wrapper { overflow-x: auto; margin-top: 15px; -webkit-overflow-scrolling: touch; }
+    .admin-table { width: 100%; min-width: 500px; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0; }
+    .admin-table th { background: #f8fafc; color: #334155; padding: 10px; text-align: left; font-size: 12px; border-bottom: 1px solid #e2e8f0; }
+    .admin-table td { padding: 10px; font-size: 13px; border-bottom: 1px solid #f1f5f9; }
 
-    .loja-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
-    
-    .pacote-card { 
-        background: #f8fafc; 
-        border: 2px solid #e2e8f0; 
-        border-radius: 14px; 
-        padding: 24px 20px; 
-        text-align: center; 
-        transition: all 0.3s; 
-        position: relative;
-    }
-    
-    .pacote-card:hover { 
-        transform: translateY(-4px); 
-        box-shadow: 0 10px 25px rgba(30, 58, 138, 0.1); 
-        border-color: #2563eb;
-        background: #ffffff;
-    }
-    
-    .pacote-card h4 { margin: 0 0 10px 0; color: #1e3a8a; font-size: 18px; font-weight: 700; }
-    .pacote-card p { font-size: 22px; font-weight: 800; color: #059669; margin-bottom: 18px; }
+    .loja-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-top: 15px; }
+    .pacote-card { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 15px; text-align: center; transition: all 0.3s; }
+    .pacote-card:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(0,0,0,0.05); }
+    .pacote-card h4 { margin: 0 0 8px 0; color: #1e40af; font-size: 16px; }
+    .pacote-card p { font-size: 16px; font-weight: bold; color: #059669; margin-bottom: 12px; }
 
     @media(min-width: 640px) {
-        body { padding: 30px 20px; }
+        body { padding: 20px; }
         .container { margin: 40px auto; }
-        .banner-login { height: 220px; }
-        .banner-login h1 { font-size: 36px; }
-        #authScreen { padding: 50px; }
-        .app-inner-content { padding: 45px; }
-        .chart-container { height: 320px; }
+        .banner-login { height: 180px; }
+        .banner-login h1 { font-size: 30px; }
+        #authScreen { padding: 45px; }
+        .app-inner-content { padding: 40px; }
+        .chart-container { height: 300px; }
     }
 </style>
 </head>
@@ -373,77 +162,76 @@
     <!-- TELA DE AUTENTICAÇÃO, REGISTRO E RECUPERAÇÃO -->
     <div id="authScreen">
         <div class="banner-login">
-            <h1>VenceConcursos</h1>
-            <div class="banner-sub">Sua aprovação começa aqui</div>
+            <h1>Portal de Questões</h1>
         </div>
 
-        <div style="max-width: 440px; margin: 35px auto 0 auto;">
+        <div style="max-width: 480px; margin: 30px auto 0 auto;">
             <div id="authErro"></div>
 
             <!-- Formulário de Login -->
             <div id="formLoginDiv">
-                <h2 style="text-align:center; font-size: 24px; color: #0f172a;">Acesse sua Conta</h2>
-                <p style="text-align:center; color:#64748b; font-size: 14px; margin-bottom: 25px;">Entre para gerar simulados direcionados e acompanhar seu progresso</p>
+                <h2 style="text-align:center; font-size: 22px;">Acesse sua Conta</h2>
+                <p style="text-align:center; color:#64748b; font-size: 14px; margin-bottom: 20px;">Entre para gerar simulados e acompanhar seu desempenho</p>
 
-                <label>E-mail</label>
+                <label>E-mail:</label>
                 <input type="email" id="loginEmail" placeholder="seu@email.com">
 
-                <label>Senha</label>
-                <input type="password" id="loginSenha" placeholder="Sua senha de acesso">
+                <label>Senha:</label>
+                <input type="password" id="loginSenha" placeholder="Sua senha">
 
-                <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
-                    <a href="#" onclick="mostrarEsqueciSenha(true)" style="color:#2563eb; text-decoration:none; font-size:13px; font-weight: 600;">Esqueceu sua senha?</a>
+                <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
+                    <a href="#" onclick="mostrarEsqueciSenha(true)" style="color:#2563eb; text-decoration:none; font-size:13px;">Esqueceu sua senha?</a>
                 </div>
 
-                <button onclick="fazerLogin()">Entrar na Plataforma</button>
-                <button onclick="mostrarTelaRegistro(true)" class="btn-secondary">Criar Nova Conta Gratuita</button>
+                <button onclick="fazerLogin()">Entrar</button>
+                <button onclick="mostrarTelaRegistro(true)" class="btn-secondary">Criar Nova Conta</button>
             </div>
 
             <!-- Formulário de Criação de Conta -->
             <div id="formRegistroDiv" class="hidden">
-                <h2 style="text-align:center; font-size: 24px; color:#059669;">Criar Nova Conta</h2>
-                <p style="text-align:center; color:#64748b; font-size: 14px; margin-bottom: 25px;">Cadastre-se e ganhe créditos para iniciar seus estudos</p>
+                <h2 style="text-align:center; font-size: 22px; color:#059669;">Criar Nova Conta</h2>
+                <p style="text-align:center; color:#64748b; font-size: 14px; margin-bottom: 20px;">Cadastre-se gratuitamente para começar</p>
 
-                <label>E-mail</label>
+                <label>E-mail:</label>
                 <input type="email" id="regEmail" placeholder="seu@email.com">
 
-                <label>Senha</label>
+                <label>Senha:</label>
                 <input type="password" id="regSenha" placeholder="Crie uma senha forte">
 
-                <label>Confirme a Senha</label>
+                <label>Confirme a Senha:</label>
                 <input type="password" id="regConfirmaSenha" placeholder="Digite a senha novamente">
 
                 <button onclick="fazerRegistro()" class="btn-secondary">Concluir Cadastro</button>
 
-                <p style="text-align:center; margin-top: 25px;">
-                    <a href="#" onclick="mostrarTelaRegistro(false)" style="color:#64748b; text-decoration:none; font-size:13px; font-weight: 600;">← Voltar para o login</a>
+                <p style="text-align:center; margin-top: 20px;">
+                    <a href="#" onclick="mostrarTelaRegistro(false)" style="color:#64748b; text-decoration:none; font-size:13px;">← Voltar para o login</a>
                 </p>
             </div>
 
             <!-- Formulário de Recuperação de Senha -->
             <div id="formEsqueciDiv" class="hidden">
-                <h2 style="text-align:center; font-size: 24px; color: #0f172a;">Recuperação de Senha</h2>
-                <p style="text-align:center; color:#64748b; font-size: 14px; margin-bottom: 25px;">Informe seu e-mail cadastrado para redefinir o acesso</p>
+                <h2 style="text-align:center; font-size: 22px;">Recuperação de Senha</h2>
+                <p style="text-align:center; color:#64748b; font-size: 14px; margin-bottom: 20px;">Informe seu e-mail cadastrado</p>
 
-                <label>E-mail cadastrado</label>
+                <label>E-mail cadastrado:</label>
                 <input type="email" id="recoveryEmail" placeholder="seu@email.com">
                 <button onclick="solicitarTokenRecuperacao()">Enviar Token de Recuperação</button>
 
-                <div id="blocoRedefinicao" class="hidden" style="margin-top: 25px; border-top: 2px solid #e2e8f0; padding-top: 20px;">
-                    <label>Token recebido</label>
+                <div id="blocoRedefinicao" class="hidden" style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
+                    <label>Token recebido:</label>
                     <input type="text" id="recoveryToken" placeholder="Cole o token aqui">
 
-                    <label>Nova Senha</label>
+                    <label>Nova Senha:</label>
                     <input type="password" id="recoveryNovaSenha" placeholder="Digite a nova senha">
 
-                    <label>Confirme a Nova Senha</label>
+                    <label>Confirme a Nova Senha:</label>
                     <input type="password" id="recoveryConfirmaSenha" placeholder="Repita a nova senha">
 
                     <button onclick="executarRedefinicaoSenha()" class="btn-secondary">Salvar Nova Senha</button>
                 </div>
 
-                <p style="text-align:center; margin-top: 25px;">
-                    <a href="#" onclick="mostrarEsqueciSenha(false)" style="color:#64748b; text-decoration:none; font-size:13px; font-weight: 600;">← Voltar para o Login</a>
+                <p style="text-align:center; margin-top: 20px;">
+                    <a href="#" onclick="mostrarEsqueciSenha(false)" style="color:#64748b; text-decoration:none; font-size:13px;">← Voltar para o Login</a>
                 </p>
             </div>
         </div>
@@ -455,30 +243,30 @@
             
             <div class="user-bar">
                 <span>👤 <strong id="userEmailSpan"></strong></span>
-                <span>💎 Créditos: <strong id="creditosSpan" style="color:#16a34a; font-size:16px;">0</strong></span>
-                <div style="display: flex; gap: 8px; width: 100%; justify-content: flex-end; margin-top: 6px;">
-                    <button onclick="abrirModalAlterarSenha()" style="width: auto; padding: 8px 14px; margin: 0; background: #2563eb; font-size: 12px; box-shadow: none;">Alterar Senha</button>
-                    <button onclick="fazerLogout()" style="width: auto; padding: 8px 14px; margin: 0; background: #dc2626; font-size: 12px; box-shadow: none;">Sair</button>
+                <span>💎 Créditos: <strong id="creditosSpan" style="color:#16a34a; font-size:15px;">0</strong></span>
+                <div style="display: flex; gap: 6px; width: 100%; justify-content: flex-end; margin-top: 4px;">
+                    <button onclick="abrirModalAlterarSenha()" style="width: auto; padding: 6px 12px; margin: 0; background: #2563eb; font-size: 11px;">Alterar Senha</button>
+                    <button onclick="fazerLogout()" style="width: auto; padding: 6px 12px; margin: 0; background: #ef4444; font-size: 11px;">Sair</button>
                 </div>
             </div>
 
             <!-- Bloco para alteração de senha do usuário logado -->
-            <div id="painelAlterarSenha" class="hidden" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px; margin-bottom: 25px;">
-                <h3 style="margin-top: 0; text-align: left; font-size: 16px; color: #1e3a8a;">🔑 Alterar Minha Senha</h3>
-                <div id="msgAlterarSenha" style="font-size: 13px; font-weight: 700; margin-bottom: 12px;"></div>
+            <div id="painelAlterarSenha" class="hidden" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 20px;">
+                <h3 style="margin-top: 0; text-align: left; font-size: 15px;">🔑 Alterar Minha Senha</h3>
+                <div id="msgAlterarSenha" style="font-size: 12px; font-weight: bold; margin-bottom: 8px;"></div>
                 
-                <label>Senha Atual</label>
+                <label>Senha Atual:</label>
                 <input type="password" id="perfilSenhaAtual" placeholder="Digite sua senha atual">
 
-                <label>Nova Senha</label>
+                <label>Nova Senha:</label>
                 <input type="password" id="perfilNovaSenha" placeholder="Digite a nova senha">
 
-                <label>Confirme a Nova Senha</label>
+                <label>Confirme a Nova Senha:</label>
                 <input type="password" id="perfilConfirmaSenha" placeholder="Repita a nova senha">
 
-                <div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
-                    <button onclick="executarAlterarSenhaUsuario()" style="width: auto; padding: 10px 16px; margin: 0; background: #16a34a; flex: 1; box-shadow: none;">Salvar Nova Senha</button>
-                    <button onclick="fecharModalAlterarSenha()" style="width: auto; padding: 10px 16px; margin: 0; background: #64748b; flex: 1; box-shadow: none;">Cancelar</button>
+                <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                    <button onclick="executarAlterarSenhaUsuario()" style="width: auto; padding: 8px 14px; margin: 0; background: #16a34a; flex: 1;">Salvar Nova Senha</button>
+                    <button onclick="fecharModalAlterarSenha()" style="width: auto; padding: 8px 14px; margin: 0; background: #64748b; flex: 1;">Cancelar</button>
                 </div>
             </div>
 
@@ -486,85 +274,82 @@
                 <button class="tab-btn active" onclick="mudarAba('gerador', this)">📝 Gerar & Simulado</button>
                 <button class="tab-btn" onclick="mudarAba('loja', this)">💳 Comprar Créditos</button>
                 <button class="tab-btn" onclick="mudarAba('estatisticas', this)">📊 Desempenho</button>
-                <button id="btnTabAdmin" class="tab-btn hidden" onclick="mudarAba('admin', this)" style="background: #fee2e2; color: #991b1b; border-color: #fca5a5;">⚙️ Admin</button>
+                <button id="btnTabAdmin" class="tab-btn hidden" onclick="mudarAba('admin', this)" style="background: #fee2e2; color: #991b1b;">⚙️ Admin</button>
             </div>
 
             <!-- ABA 1: GERADOR DE QUESTÕES -->
             <div id="tabGerador">
-                <h1>🏛️ Simulador Inteligente para Concursos</h1>
-                <p style="text-align:center; color:#64748b; margin-bottom: 25px;">Transforme editais e apostilas em PDF em baterias de questões no padrão das principais bancas</p>
+                <h1>🏛️ Simulador - Estudos / Concursos</h1>
+                <p style="text-align:center;color:#64748b">Transforme qualquer PDF em questões focadas em concursos</p>
 
-                <label>Selecione o arquivo PDF da matéria:</label>
+                <label>Selecione o PDF:</label>
                 <input type="file" id="arquivo" accept="application/pdf">
 
                 <label>Quantidade de exercícios (1 crédito por questão - máx. 50):</label>
                 <input type="number" id="quantidade" value="5" min="1" max="50">
 
-                <label>Nível de exigência da prova:</label>
+                <label>Estilo da questão:</label>
                 <select id="nivel">
-                    <option value="Revisão da matéria">Revisão e Fixação</option>
-                    <option value="Nível concurso" selected>Nível Concurso Público</option>
-                    <option value="Nível prova difícil">Nível Alto Desempenho (Disputado)</option>
+                    <option value="Revisão da matéria">Revisão da matéria</option>
+                    <option value="Nível concurso" selected>Nível concurso</option>
+                    <option value="Nível prova difícil">Nível prova difícil</option>
                 </select>
 
-                <button id="btnGerar" onclick="processarPDF()">Gerar Bateria de Questões</button>
+                <button id="btnGerar" onclick="processarPDF()">Gerar Exercícios</button>
 
-                <div id="status" style="display:none;"></div>
+                <div id="status"></div>
                 <div id="progresso">
                     <div id="barra"></div>
                 </div>
 
                 <div id="area"></div>
 
-                <button id="btnCorrigir" onclick="corrigir()" style="display:none">Salvar e Corrigir Prova</button>
-                <button id="btnPDF" onclick="gerarPDFProva()" style="display:none; background: #475569; box-shadow: 0 4px 12px rgba(71, 85, 105, 0.25);">📄 Baixar Prova em PDF</button>
+                <button id="btnCorrigir" onclick="corrigir()" style="display:none">Salvar e Corrigir</button>
+                <button id="btnPDF" onclick="gerarPDFProva()" style="display:none; background: #475569;">📄 Gerar Prova em PDF</button>
 
                 <div id="resultado" class="resultado" style="display:none;"></div>
             </div>
 
             <!-- ABA 2: LOJA DE CRÉDITOS -->
             <div id="tabLoja" class="hidden">
-                <h1>💳 Planos e Créditos para Simulados</h1>
-                <p style="text-align:center; color:#64748b; margin-bottom: 25px;">Invista na sua preparação com liberação de créditos imediata</p>
+                <h1>💳 Adicionar Créditos</h1>
+                <p style="text-align:center;color:#64748b">Escolha um pacote e adquira com liberação imediata</p>
                 
                 <div class="loja-grid">
                     <div class="pacote-card">
                         <h4>50 Créditos</h4>
                         <p>R$ 9,90</p>
-                        <button onclick="comprarCreditos('pacote_50')">Adquirir Pacote</button>
+                        <button onclick="comprarCreditos('pacote_50')">Comprar</button>
                     </div>
                     <div class="pacote-card">
                         <h4>200 Créditos</h4>
                         <p>R$ 19,90</p>
-                        <button onclick="comprarCreditos('pacote_200')">Adquirir Pacote</button>
+                        <button onclick="comprarCreditos('pacote_200')">Comprar</button>
                     </div>
                     <div class="pacote-card">
                         <h4>500 Créditos</h4>
                         <p>R$ 29,90</p>
-                        <button onclick="comprarCreditos('pacote_500')">Adquirir Pacote</button>
+                        <button onclick="comprarCreditos('pacote_500')">Comprar</button>
                     </div>
-                    <div class="pacote-card" style="border-color: #2563eb; background: linear-gradient(135deg, #f8fafc, #eff6ff);">
-                        <div style="position: absolute; top: -10px; right: 15px; background: #f59e0b; color: #fff; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 20px; text-transform: uppercase;">Mais Popular</div>
+                    <div class="pacote-card">
                         <h4>1000 Créditos</h4>
                         <p>R$ 49,90</p>
-                        <button onclick="comprarCreditos('pacote_1000')" style="background: linear-gradient(135deg, #1e3a8a, #2563eb);">Adquirir Pacote</button>
+                        <button onclick="comprarCreditos('pacote_1000')">Comprar</button>
                     </div>
                 </div>
             </div>
 
             <!-- ABA 3: ESTATÍSTICAS -->
             <div id="tabEstatisticas" class="hidden">
-                <h1>📊 Painel de Evolução do Concurseiro</h1>
-                <p style="text-align:center; color:#64748b; margin-bottom: 25px;">Monitore seu índice de acertos e consistência nos estudos</p>
-                
+                <h1>📊 Painel de Desempenho</h1>
                 <div class="stats-grid">
                     <div class="stat-card">
                         <h3 id="statSimulados">0</h3>
-                        <p>Simulados Realizados</p>
+                        <p>Simulados Feitos</p>
                     </div>
-                    <div class="stat-card" style="border-top-color: #059669;">
-                        <h3 id="statMedia" style="color: #059669;">0.0</h3>
-                        <p>Média Geral de Notas</p>
+                    <div class="stat-card">
+                        <h3 id="statMedia">0.0</h3>
+                        <p>Média Geral</p>
                     </div>
                 </div>
 
@@ -574,13 +359,13 @@
                     </div>
                 </div>
                 
-                <button onclick="limparHistoricoServidor()" style="background: #dc2626; margin-top: 25px; width: 100%; max-width: 280px; display: block; margin-left: auto; margin-right: auto; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);">🗑️ Limpar Meu Histórico</button>
+                <button onclick="limparHistoricoServidor()" style="background: #ef4444; margin-top: 20px; width: 100%; max-width: 250px; display: block; margin-left: auto; margin-right: auto;">🗑️ Limpar Meu Histórico</button>
             </div>
 
             <!-- ABA 4: PAINEL ADMINISTRATIVO -->
             <div id="tabAdmin" class="hidden">
-                <h1>⚙️ Painel de Gestão Administrativa</h1>
-                <p style="text-align:center; color:#64748b;">Controle de usuários cadastrados e distribuição de créditos na plataforma.</p>
+                <h1>⚙️ Gestão de Usuários</h1>
+                <p style="text-align:center;color:#64748b;">Gerencie os créditos e perfis dos usuários cadastrados.</p>
 
                 <div class="admin-table-wrapper">
                     <table class="admin-table">
@@ -588,8 +373,8 @@
                             <tr>
                                 <th>ID</th>
                                 <th>E-mail</th>
-                                <th>Permissão</th>
                                 <th>Créditos</th>
+                                <th>Função</th>
                                 <th style="text-align: center;">Ações</th>
                             </tr>
                         </thead>
@@ -876,12 +661,9 @@ async function lerPDF(file){
 }
 
 function atualizarProgresso(percentual, texto){
-    let progEl = document.getElementById("progresso");
-    let statusEl = document.getElementById("status");
-    progEl.style.display="block";
-    statusEl.style.display="block";
+    document.getElementById("progresso").style.display="block";
     document.getElementById("barra").style.width=percentual+"%";
-    statusEl.innerHTML=texto;
+    document.getElementById("status").innerHTML=texto;
 }
 
 async function processarPDF(){
@@ -891,14 +673,14 @@ async function processarPDF(){
         if(quantidade > 50) { alert("O limite máximo é de 50 questões por gerador."); return; }
 
         btnGerar.disabled = true; btnGerar.innerHTML = "⏳ Processando...";
-        atualizarProgresso(10, "📖 Lendo o conteúdo do PDF...");
+        atualizarProgresso(10, "📖 Lendo PDF...");
 
         let arquivo = document.getElementById("arquivo").files[0];
         if(!arquivo){ alert("Selecione um PDF"); return; }
         let texto = await lerPDF(arquivo);
         if(texto.length < 50){ throw new Error("O PDF não possui texto suficiente."); }
 
-        atualizarProgresso(50, "🤖 IA estruturando as questões de concurso...");
+        atualizarProgresso(50, "🤖 IA analisando o PDF...");
         
         let nivel = document.getElementById("nivel").value;
         let token = localStorage.getItem(TOKEN_KEY);
@@ -916,26 +698,22 @@ async function processarPDF(){
         document.getElementById("creditosSpan").innerText = dadosServidor.creditosRestantes;
 
         mostrarQuestoes();
-        atualizarProgresso(100, "✅ Bateria de exercícios criada com sucesso!");
-        setTimeout(()=>{ 
-            document.getElementById("progresso").style.display="none"; 
-            document.getElementById("status").style.display="none";
-        }, 2000);
+        atualizarProgresso(100, "✅ Exercícios criados!");
+        setTimeout(()=>{ document.getElementById("progresso").style.display="none"; }, 1000);
     } catch(e){
-        document.getElementById("status").style.display="block";
         document.getElementById("status").innerHTML = "❌ Erro: " + e.message;
     } finally {
-        btnGerar.disabled = false; btnGerar.innerHTML = "Gerar Bateria de Questões";
+        btnGerar.disabled = false; btnGerar.innerHTML = "Gerar Exercícios";
     }
 }
 
 function mostrarQuestoes(){
-    let html="<h2 style='margin-top: 30px;'>📝 Bateria de Exercícios</h2>";
+    let html="<h2>📝 Exercícios</h2>";
     perguntas.forEach((p,i)=>{
         html+=`
         <div class="questao">
             <b>Questão ${i+1}</b>
-            <div style="margin-top:6px; display:inline-block; padding:4px 10px; background:#e0f2fe; color:#0369a1; border-radius:20px; font-size:12px; font-weight:700;">
+            <div style="margin-top:6px; display:inline-block; padding:4px 10px; background:#dbeafe; color:#1e40af; border-radius:20px; font-size:12px; font-weight:bold;">
                 📘 ${p.tema}
             </div>
             <p style="margin-top:10px">${p.pergunta}</p>
@@ -974,7 +752,7 @@ async function corrigir(){
                 if(selecionada) selecionada.parentElement.classList.add("errada");
                 let div = document.createElement("div");
                 div.className = "explicacao";
-                div.innerHTML = `<p><b>✅ Alternativa Correta:</b> ${p.opcoes.find(x=>x.startsWith(p.resposta)) || ""}</p><hr style="border:0; border-top:1px solid #bfdbfe; margin:8px 0;"><p><b>👨‍🏫 Comentário do Professor:</b> ${p.explicacao}</p>`;
+                div.innerHTML = `<p><b>✅ Correta:</b> ${p.opcoes.find(x=>x.startsWith(p.resposta)) || ""}</p><hr><p><b>👨‍🏫 Explicação:</b> ${p.explicacao}</p>`;
                 document.querySelectorAll(".questao")[i].appendChild(div);
             }
         });
@@ -982,7 +760,7 @@ async function corrigir(){
         let nota = (acertos/perguntas.length)*10;
         let painelResult = document.getElementById("resultado");
         painelResult.style.display = "block";
-        painelResult.innerHTML = `Resultado do Simulado: ✅ Acertos: ${acertos}/${perguntas.length} | ⭐ Nota: ${nota.toFixed(1)}`;
+        painelResult.innerHTML = `Resultado: ✅ Acertos: ${acertos}/${perguntas.length} | ⭐ Nota: ${nota.toFixed(1)}`;
         
         await fetch('/api/historico', {
             method: 'POST',
@@ -990,7 +768,7 @@ async function corrigir(){
             body: JSON.stringify({ acertos, total: perguntas.length, nota: Number(nota.toFixed(1)) })
         });
     } catch(e) { alert("Erro: " + e.message); } 
-    finally { corrigindo=false; botao.disabled=false; botao.innerHTML = "Salvar e Corrigir Prova"; }
+    finally { corrigindo=false; botao.disabled=false; botao.innerHTML = "Salvar e Corrigir"; }
 }
 
 function gerarPDFProva(){
@@ -1007,14 +785,14 @@ function gerarPDFProva(){
     }
 
     pdf.setFont("helvetica", "bold"); pdf.setFontSize(15); pdf.setTextColor(30, 64, 175);
-    pdf.text("VENCE CONCURSOS - SIMULADO DIRECIONADO", 105, y, { align: "center" }); y += 15;
+    pdf.text("SIMULADO - CURSOS / CONCURSOS", 105, y, { align: "center" }); y += 15;
 
     perguntas.forEach((q, i) => {
         addText(`QUESTÃO ${i + 1} [${q.tema}]`, 11, "bold", [30, 64, 175], 0); y += 1;
         addText(q.pergunta, 10, "normal", [30, 41, 59], 0); y += 2;
         q.opcoes.forEach(op => { addText(`(   )  ${op}`, 9.5, "normal", [71, 85, 105], 6); }); y += 6; 
     });
-    pdf.save("Simulado_VenceConcursos.pdf");
+    pdf.save("Simulado.pdf");
 }
 
 async function carregarEstatisticasServidor() {
@@ -1040,7 +818,7 @@ function renderizarGrafico(historico) {
             labels: historico.map((_, i) => `Simulado #${i + 1}`),
             datasets: [{
                 label: 'Nota alcançada', data: historico.map(h => h.nota),
-                borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, 0.15)', fill: true, tension: 0.3, borderWidth: 3
+                borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, 0.2)', fill: true, tension: 0.3
             }]
         },
         options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 10 } } }
@@ -1048,7 +826,7 @@ function renderizarGrafico(historico) {
 }
 
 async function limparHistoricoServidor() {
-    if(confirm("Deseja apagar todo o seu histórico de desempenho?")) {
+    if(confirm("Deseja apagar todo o histórico?")) {
         await fetch('/api/historico', { method: 'DELETE', headers: { 'Authorization': `Bearer ${localStorage.getItem(TOKEN_KEY)}` }});
         carregarEstatisticasServidor();
     }
@@ -1067,12 +845,12 @@ async function carregarListaUsuariosAdmin() {
             <tr>
                 <td style="color: #64748b;">#${u.id}</td>
                 <td><b>${u.email}</b></td>
-                <td><span style="padding: 4px 10px; border-radius:6px; font-size:12px; font-weight:700; background: ${u.role === 'admin' ? '#fee2e2;color:#991b1b' : '#f1f5f9;color:#475569'};">${u.role.toUpperCase()}</span></td>
+                <td><span style="padding: 3px 8px; border-radius:6px; font-size:11px; font-weight:bold; background: ${u.role === 'admin' ? '#fee2e2;color:#991b1b' : '#f1f5f9;color:#475569'};">${u.role.toUpperCase()}</span></td>
                 <td>
-                    <input type="number" id="inputCreditos_${u.id}" value="${u.creditos}" style="width: 90px; padding: 8px; margin: 0; display: inline-block;">
+                    <input type="number" id="inputCreditos_${u.id}" value="${u.creditos}" style="width: 80px; padding: 6px; margin: 0; display: inline-block;">
                 </td>
                 <td style="text-align: center;">
-                    <button onclick="salvarCreditosAdmin(${u.id})" style="width: auto; padding: 8px 14px; margin: 0; font-size: 12px; background: #16a34a; box-shadow: none;">💾 Salvar</button>
+                    <button onclick="salvarCreditosAdmin(${u.id})" style="width: auto; padding: 6px 12px; margin: 0; font-size: 11px; background: #16a34a;">💾 Salvar</button>
                 </td>
             </tr>`;
     });
