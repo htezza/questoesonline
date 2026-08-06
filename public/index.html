@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Questões Jurídico & Fiscal</title>
+<title>Questões - Estude Com Foco</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -162,7 +162,7 @@
     <!-- TELA DE AUTENTICAÇÃO, REGISTRO E RECUPERAÇÃO -->
     <div id="authScreen">
         <div class="banner-login">
-            <h1>Portal de Questões Jurídicas e Fiscais</h1>
+            <h1>Portal de Questões</h1>
         </div>
 
         <div style="max-width: 480px; margin: 30px auto 0 auto;">
@@ -279,7 +279,7 @@
 
             <!-- ABA 1: GERADOR DE QUESTÕES -->
             <div id="tabGerador">
-                <h1>🏛️ Simulador Jurídico / Fiscal</h1>
+                <h1>🏛️ Simulador - Estudos / Concursos</h1>
                 <p style="text-align:center;color:#64748b">Transforme qualquer PDF em questões focadas em concursos</p>
 
                 <label>Selecione o PDF:</label>
@@ -785,7 +785,7 @@ function gerarPDFProva(){
     }
 
     pdf.setFont("helvetica", "bold"); pdf.setFontSize(15); pdf.setTextColor(30, 64, 175);
-    pdf.text("SIMULADO FISCAL / JURIDICO", 105, y, { align: "center" }); y += 15;
+    pdf.text("SIMULADO - CURSOS / CONCURSOS", 105, y, { align: "center" }); y += 15;
 
     perguntas.forEach((q, i) => {
         addText(`QUESTÃO ${i + 1} [${q.tema}]`, 11, "bold", [30, 64, 175], 0); y += 1;
