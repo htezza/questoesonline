@@ -365,7 +365,8 @@ app.get('/api/admin/estatisticas', verificarToken, verificarAdmin, async (req, r
         // Buscar investimento e calcular CAC corretamente
         let invRow = await getQuery(`SELECT valor FROM configuracoes WHERE chave = 'investimento_marketing'`);
         let investimentoMarketing = invRow ? Number(invRow.valor) : 0;
-        let cac = compradores > 0 ? (investimentoMarketing / compradores) : 0;
+        let investimentoTotal = Number(investimentoMarketing) || 0;
+        let cac = usuariosCadastrados > 0 ? (investimentoTotal / usuariosCadastrados) : 0;
 
         let ticket_medio = compradores > 0 ? (faturamento / compradores) : 0;
         let pct_compraram = usuarios_cadastrados > 0 ? ((compradores / usuarios_cadastrados) * 100) : 0;
@@ -376,7 +377,7 @@ app.get('/api/admin/estatisticas', verificarToken, verificarAdmin, async (req, r
         let total_questoes = q_gratis + q_pagas;
         let custo_ia = total_questoes * 0.001; 
         
-        let lucro_liquido = faturamento - custo_ia;
+        let lucro_liquido = faturamento - custo_ia - investimentoTotal;
         let ltv = compradores > 0 ? faturamento / compradores : 0;
 
         res.json({
