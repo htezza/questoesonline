@@ -287,6 +287,32 @@
         .app-inner-content { padding: 40px; }
         .chart-container { height: 300px; }
     }
+
+/* ===== Melhorias UX - Gerador e Simulado ===== */
+.ux-welcome{background:linear-gradient(135deg,#eff6ff,#f8fafc);border:1px solid #dbeafe;border-radius:16px;padding:18px;margin:18px 0 20px;}
+.ux-welcome h2{margin:0 0 6px;color:#1e3a8a;font-size:20px;}
+.ux-welcome p{margin:0;color:#64748b;font-size:14px;line-height:1.5;}
+.ux-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:15px;}
+.ux-step{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:12px;text-align:center;font-size:12px;color:#475569;}
+.ux-step strong{display:block;color:#1e3a8a;font-size:13px;margin-top:5px;}
+.credit-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#ecfdf5;border:1px solid #bbf7d0;border-radius:12px;padding:12px 14px;margin-bottom:18px;}
+.credit-banner strong{color:#166534;} .credit-banner span{font-size:13px;color:#166534;}
+.credit-banner button{width:auto;margin:0;padding:8px 12px;background:#16a34a;font-size:12px;}
+.generator-card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:18px;box-shadow:0 3px 12px rgba(15,23,42,.04);}
+.generator-card .field-title{font-weight:700;color:#334155;font-size:13px;margin:14px 0 7px;display:block;}
+.file-drop{border:2px dashed #bfdbfe;background:#f8fbff;border-radius:14px;padding:20px;text-align:center;cursor:pointer;transition:.2s;}
+.file-drop:hover{border-color:#60a5fa;background:#eff6ff;} .file-drop .file-icon{font-size:28px;display:block;margin-bottom:6px;}
+.file-drop strong{color:#1e40af;font-size:14px;} .file-drop small{display:block;color:#64748b;margin-top:4px;}
+.generator-options{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.generator-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;} .generator-actions button{margin:0;flex:1;min-width:180px;}
+#btnGerar{background:linear-gradient(135deg,#2563eb,#1d4ed8);box-shadow:0 5px 14px rgba(37,99,235,.18);}
+.study-progress-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:20px 0 10px;padding-bottom:8px;border-bottom:1px solid #e2e8f0;}
+.study-progress-head h2{margin:0;font-size:18px;} .study-progress-count{font-size:12px;font-weight:700;color:#2563eb;background:#eff6ff;padding:6px 10px;border-radius:20px;}
+.question-summary{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;} .question-summary span{font-size:12px;padding:6px 10px;border-radius:20px;background:#f1f5f9;color:#475569;}
+.result-hero{padding:22px!important;background:linear-gradient(135deg,#f0fdf4,#ecfdf5)!important;border:1px solid #bbf7d0!important;}
+.result-score{font-size:34px;color:#15803d;line-height:1;margin:8px 0;} .result-sub{font-size:13px;color:#166534;font-weight:600;}
+.result-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:15px;} .result-actions button{width:auto;margin:0;min-width:170px;}
+@media(max-width:700px){.ux-steps{grid-template-columns:repeat(2,1fr)}.generator-options{grid-template-columns:1fr}.credit-banner{align-items:flex-start}.credit-banner button{flex-shrink:0}.generator-card{padding:14px}.generator-actions button{min-width:100%;}.question-summary{gap:6px}.result-score{font-size:30px}}
 </style>
 </head>
 
@@ -443,34 +469,59 @@
 
             <!-- ABA 1: GERADOR DE QUESTÕES -->
             <div id="tabGerador">
-                <h1>🏛️ Simulador - Estudos / Concursos</h1>
-                <p style="text-align:center;color:#64748b">Transforme qualquer PDF em questões focadas em concursos</p>
+                <h1>🏛️ Seu espaço de estudos</h1>
+                <p style="text-align:center;color:#64748d">Transforme seu material em questões e acompanhe sua evolução.</p>
 
-                <label>Selecione o PDF:</label>
-                <input type="file" id="arquivo" accept="application/pdf">
-
-                <label>Quantidade de exercícios (1 crédito por questão - máx. 50):</label>
-                <input type="number" id="quantidade" value="5" min="1" max="50">
-
-                <label>Estilo da questão:</label>
-                <select id="nivel">
-                    <option value="Revisão da matéria">Revisão da matéria</option>
-                    <option value="Nível concurso" selected>Nível concurso</option>
-                    <option value="Nível prova difícil">Nível prova difícil</option>
-                </select>
-
-                <button id="btnGerar" onclick="processarPDF()">Gerar Exercícios</button>
-
-                <div id="status"></div>
-                <div id="progresso">
-                    <div id="barra"></div>
+                <div class="ux-welcome">
+                    <h2>🎯 Vamos começar seu estudo</h2>
+                    <p>Envie seu material, escolha o formato do treino e deixe a plataforma criar seu simulado.</p>
+                    <div class="ux-steps">
+                        <div class="ux-step">📄<strong>1. Envie o PDF</strong>Seu material</div>
+                        <div class="ux-step">⚙️<strong>2. Configure</strong>Quantidade e nível</div>
+                        <div class="ux-step">🤖<strong>3. Gere questões</strong>Criadas com IA</div>
+                        <div class="ux-step">📊<strong>4. Veja o resultado</strong>Corrija e acompanhe</div>
+                    </div>
                 </div>
 
+                <div class="credit-banner">
+                    <div><span>💎 Seus créditos</span><br><strong id="creditosMensagem">Você tem 0 questões disponíveis</strong></div>
+                    <button onclick="mudarAba('loja', document.querySelectorAll('.tab-btn')[1])">Adicionar créditos</button>
+                </div>
+
+                <div class="generator-card">
+                    <span class="field-title">📄 1. Escolha seu material</span>
+                    <label class="file-drop" for="arquivo">
+                        <span class="file-icon">📚</span>
+                        <strong id="nomeArquivo">Clique para selecionar seu PDF</strong>
+                        <small>Leis, códigos tributários, apostilas, legislação ou qualquer material de estudo</small>
+                    </label>
+                    <input type="file" id="arquivo" accept="application/pdf" style="display:none">
+
+                    <div class="generator-options">
+                        <div>
+                            <span class="field-title">🔢 2. Quantidade</span>
+                            <input type="number" id="quantidade" value="5" min="1" max="50">
+                            <small style="color:#64748b">1 crédito por questão · máximo 50</small>
+                        </div>
+                        <div>
+                            <span class="field-title">🎯 3. Nível</span>
+                            <select id="nivel">
+                                <option value="Revisão da matéria">Revisão da matéria</option>
+                                <option value="Nível concurso" selected>Nível concurso</option>
+                                <option value="Nível prova difícil">Nível prova difícil</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="generator-actions"><button id="btnGerar" onclick="processarPDF()">🚀 Gerar meu simulado</button></div>
+                </div>
+
+                <div id="status"></div>
+                <div id="progresso"><div id="barra"></div></div>
                 <div id="area"></div>
-
-                <button id="btnCorrigir" onclick="corrigir()" style="display:none">Salvar e Corrigir</button>
-                <button id="btnPDF" onclick="gerarPDFProva()" style="display:none; background: #475569;">📄 Gerar Prova em PDF</button>
-
+                <div class="generator-actions">
+                    <button id="btnCorrigir" onclick="corrigir()" style="display:none">✅ Corrigir meu simulado</button>
+                    <button id="btnPDF" onclick="gerarPDFProva()" style="display:none; background:#475569;">📄 Exportar para PDF</button>
+                </div>
                 <div id="resultado" class="resultado" style="display:none;"></div>
             </div>
 
@@ -507,14 +558,10 @@
             <div id="tabEstatisticas" class="hidden">
                 <h1>📊 Painel de Desempenho</h1>
                 <div class="stats-grid">
-                    <div class="stat-card">
-                        <h3 id="statSimulados">0</h3>
-                        <p>Simulados Feitos</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3 id="statMedia">0.0</h3>
-                        <p>Média Geral</p>
-                    </div>
+                    <div class="stat-card"><h3 id="statSimulados">0</h3><p>Simulados Feitos</p></div>
+                    <div class="stat-card"><h3 id="statMedia">0.0</h3><p>Média Geral</p></div>
+                    <div class="stat-card"><h3 id="statQuestoes">0</h3><p>Questões Respondidas</p></div>
+                    <div class="stat-card"><h3 id="statMelhorNota">0.0</h3><p>Melhor Nota</p></div>
                 </div>
 
                 <div class="chart-wrapper">
@@ -590,6 +637,20 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 // NAVEGAÇÃO ENTRE ABAS
+function atualizarMensagemCreditos(creditos){
+    const el=document.getElementById("creditosMensagem");
+    if(!el) return;
+    const n=Number(creditos)||0;
+    el.innerText = n === 1 ? "Você tem 1 questão disponível" : `Você tem ${n} questões disponíveis`;
+    el.style.color = n <= 5 ? "#b45309" : "#166534";
+}
+
+document.addEventListener("DOMContentLoaded", ()=>{
+    const arquivo=document.getElementById("arquivo");
+    const nome=document.getElementById("nomeArquivo");
+    if(arquivo){ arquivo.addEventListener("change", ()=>{ nome.innerText=arquivo.files[0] ? "📄 " + arquivo.files[0].name : "Clique para selecionar seu PDF"; }); }
+});
+
 function mudarAba(aba, elemento) {
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     if(elemento) elemento.classList.add('active');
@@ -649,7 +710,7 @@ async function fazerLogin() {
         localStorage.setItem(TOKEN_KEY, data.token);
         
         document.getElementById("userEmailSpan").innerText = email;
-        document.getElementById("creditosSpan").innerText = data.creditos;
+        document.getElementById("creditosSpan").innerText = data.creditos; atualizarMensagemCreditos(data.creditos);
         
         if (data.role === 'admin') {
             document.getElementById("btnTabAdmin").classList.remove("hidden");
@@ -721,7 +782,7 @@ async function carregarDadosUsuario(token) {
         
         let emailDigitado = document.getElementById("loginEmail").value;
         document.getElementById("userEmailSpan").innerText = emailDigitado || "Usuário";
-        document.getElementById("creditosSpan").innerText = data.creditos;
+        document.getElementById("creditosSpan").innerText = data.creditos; atualizarMensagemCreditos(data.creditos);
         
         if (data.role === 'admin') {
             document.getElementById("btnTabAdmin").classList.remove("hidden");
@@ -872,14 +933,14 @@ async function processarPDF(){
         if(quantidade > 50) { alert("O limite máximo é de 50 questões por gerador."); return; }
 
         btnGerar.disabled = true; btnGerar.innerHTML = "⏳ Processando...";
-        atualizarProgresso(10, "📖 Lendo PDF...");
+        atualizarProgresso(10, "📄 1/3 · Analisando seu material...");
 
         let arquivo = document.getElementById("arquivo").files[0];
         if(!arquivo){ alert("Selecione um PDF"); return; }
         let texto = await lerPDF(arquivo);
         if(texto.length < 50){ throw new Error("O PDF não possui texto suficiente."); }
 
-        atualizarProgresso(50, "🤖 IA analisando o PDF...");
+        atualizarProgresso(50, "🤖 2/3 · Criando suas questões...");
         
         let nivel = document.getElementById("nivel").value;
         let token = localStorage.getItem(TOKEN_KEY);
@@ -894,10 +955,10 @@ async function processarPDF(){
         if(!respostaServidor.ok) throw new Error(dadosServidor.erro);
 
         perguntas = dadosServidor.questoes;
-        document.getElementById("creditosSpan").innerText = dadosServidor.creditosRestantes;
+        document.getElementById("creditosSpan").innerText = dadosServidor.creditosRestantes; atualizarMensagemCreditos(dadosServidor.creditosRestantes);
 
         mostrarQuestoes();
-        atualizarProgresso(100, "✅ Exercícios criados!");
+        atualizarProgresso(100, "✨ 3/3 · Simulado pronto!");
         setTimeout(()=>{ document.getElementById("progresso").style.display="none"; }, 1000);
     } catch(e){
         document.getElementById("status").innerHTML = "❌ Erro: " + e.message;
@@ -907,24 +968,21 @@ async function processarPDF(){
 }
 
 function mostrarQuestoes(){
-    let html="<h2>📝 Exercícios</h2>";
+    let html=`<div class="study-progress-head"><h2>📝 Seu simulado</h2><span class="study-progress-count">${perguntas.length} questões</span></div>`;
+    html+=`<div class="question-summary"><span>🎯 Responda com calma</span><span>💡 Depois veja a correção e a explicação</span></div>`;
     perguntas.forEach((p,i)=>{
-        html+=`
-        <div class="questao">
-            <b>Questão ${i+1}</b>
-            <div style="margin-top:6px; display:inline-block; padding:4px 10px; background:#dbeafe; color:#1e40af; border-radius:20px; font-size:12px; font-weight:bold;">
-                📘 ${p.tema}
-            </div>
+        html+=`<div class="questao" id="questao-${i}">
+            <b>Questão ${i+1} de ${perguntas.length}</b>
+            <div style="margin-top:6px; display:inline-block; padding:4px 10px; background:#dbeafe; color:#1e40af; border-radius:20px; font-size:12px; font-weight:bold;">📘 ${p.tema}</div>
             <p style="margin-top:10px">${p.pergunta}</p>
-             ${(p.opcoes || []).map(op=>`
-                <label class="alternativa"><input type="radio" name="q${i}" value="${op.charAt(0)}"> ${op}</label>
-            `).join("")}
+            ${(p.opcoes || []).map(op=>`<label class="alternativa"><input type="radio" name="q${i}" value="${op.charAt(0)}"> ${op}</label>`).join("")}
         </div>`;
     });
     document.getElementById("area").innerHTML=html;
     document.getElementById("btnCorrigir").style.display="block";
     document.getElementById("btnPDF").style.display="block";
     document.getElementById("resultado").style.display="none";
+    document.getElementById("area").scrollIntoView({behavior:"smooth",block:"start"});
 }
 
 async function corrigir(){
@@ -959,7 +1017,10 @@ async function corrigir(){
         let nota = (acertos/perguntas.length)*10;
         let painelResult = document.getElementById("resultado");
         painelResult.style.display = "block";
-        painelResult.innerHTML = `Resultado: ✅ Acertos: ${acertos}/${perguntas.length} | ⭐ Nota: ${nota.toFixed(1)}`;
+        painelResult.className = "resultado result-hero";
+        const aproveitamento = Math.round((acertos/perguntas.length)*100);
+        let mensagem = nota >= 8 ? "Excelente desempenho! 🚀" : nota >= 6 ? "Bom resultado! Continue praticando. 💪" : "Cada questão é uma oportunidade de aprender. Continue! 📚";
+        painelResult.innerHTML = `<div style="font-size:14px;color:#166534;font-weight:700;">🎯 RESULTADO DO SIMULADO</div><div class="result-score">${nota.toFixed(1)}</div><div class="result-sub">${acertos} de ${perguntas.length} acertos · ${aproveitamento}% de aproveitamento</div><p style="margin:10px 0 0;color:#166534;">${mensagem}</p><div class="result-actions"><button onclick="window.scrollTo({top:0,behavior:'smooth'})">🔄 Revisar questões</button><button onclick="gerarPDFProva()" style="background:#475569;">📄 Exportar PDF</button></div>`;
         
         await fetch('/api/historico', {
             method: 'POST',
@@ -1002,6 +1063,8 @@ async function carregarEstatisticasServidor() {
         
         document.getElementById("statSimulados").innerText = historico.length;
         document.getElementById("statMedia").innerText = historico.length > 0 ? (historico.reduce((acc, curr) => acc + curr.nota, 0) / historico.length).toFixed(1) : "0.0";
+        document.getElementById("statQuestoes").innerText = historico.reduce((acc, curr) => acc + (Number(curr.total) || 0), 0);
+        document.getElementById("statMelhorNota").innerText = historico.length > 0 ? Math.max(...historico.map(h => Number(h.nota) || 0)).toFixed(1) : "0.0";
         renderizarGrafico(historico);
     } catch(e) {}
 }
