@@ -41,38 +41,175 @@
         overflow: hidden;
     }
 
-    /* === Banner Superior === */
-    .banner-login {
-        height: 160px;
-        background-image: url('https://images.unsplash.com/photo-1589829085413-56de89184d95?q=80&w=2000&auto=format&fit=crop');
+    /* === Tela de autenticação / conversão === */
+    #authScreen { padding: 0; background: #fff; }
+
+    .auth-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.08fr) minmax(360px, .92fr);
+        min-height: 620px;
+    }
+
+    .auth-hero {
+        position: relative;
+        overflow: hidden;
+        padding: 52px 52px 45px;
+        color: white;
+        background:
+            linear-gradient(135deg, rgba(15,35,92,.97), rgba(30,64,175,.92)),
+            url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=1800&auto=format&fit=crop');
         background-size: cover;
         background-position: center;
-        position: relative;
         display: flex;
-        align-items: center;
+        flex-direction: column;
         justify-content: center;
     }
 
-    .banner-login::after {
+    .auth-hero::before {
         content: '';
         position: absolute;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: linear-gradient(0deg, rgba(30,58,138,0.95) 0%, rgba(30,58,138,0.6) 100%);
+        width: 360px; height: 360px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.06);
+        right: -150px; top: -150px;
     }
 
-    .banner-login h1 {
+    .auth-hero::after {
+        content: '';
+        position: absolute;
+        width: 240px; height: 240px;
+        border-radius: 50%;
+        background: rgba(34,197,94,.10);
+        left: -100px; bottom: -100px;
+    }
+
+    .hero-content { position: relative; z-index: 1; max-width: 560px; }
+    .brand-mini {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: .3px;
+        margin-bottom: 24px;
+        opacity: .95;
+    }
+    .brand-mini span {
+        width: 34px; height: 34px;
+        display: grid; place-items: center;
+        border-radius: 10px;
+        background: rgba(255,255,255,.14);
+        border: 1px solid rgba(255,255,255,.18);
+        font-size: 18px;
+    }
+    .auth-hero h1 {
+        font-family: 'Roboto Slab', serif;
         color: white;
-        z-index: 1;
-        font-size: 26px;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.4);
-        margin: 0;
-        text-align: center;
-        padding: 0 15px;
+        font-size: clamp(30px, 4vw, 46px);
+        line-height: 1.08;
+        margin: 0 0 16px;
+        letter-spacing: -.6px;
+    }
+    .auth-hero h1 strong { color: #86efac; }
+    .hero-subtitle {
+        color: rgba(255,255,255,.86);
+        font-size: 17px;
+        line-height: 1.55;
+        margin: 0 0 28px;
+        max-width: 510px;
     }
 
-    /* === Área de Login Ajustada === */
-    #authScreen {
-        padding: 40px;
+    .free-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        width: fit-content;
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: white;
+        padding: 12px 17px;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 900;
+        box-shadow: 0 10px 25px rgba(22,163,74,.28);
+        margin-bottom: 25px;
+    }
+    .free-badge small { display:block; font-size:11px; font-weight:700; opacity:.9; margin-top:2px; }
+
+    .benefit-list { display: grid; gap: 13px; margin-top: 4px; }
+    .benefit-item { display:flex; align-items:flex-start; gap:12px; color:rgba(255,255,255,.92); font-size:14px; line-height:1.35; }
+    .benefit-icon {
+        flex: 0 0 28px; width:28px; height:28px; border-radius:8px;
+        display:grid; place-items:center; background:rgba(255,255,255,.12);
+        border:1px solid rgba(255,255,255,.12); font-size:14px;
+    }
+    .benefit-item b { color:#fff; }
+
+    .auth-form-panel {
+        padding: 48px 52px;
+        display:flex;
+        align-items:center;
+        background:#fff;
+    }
+    .auth-form-inner { width:100%; max-width:390px; margin:0 auto; }
+    .form-kicker {
+        display:inline-block;
+        color:#2563eb;
+        background:#eff6ff;
+        border:1px solid #dbeafe;
+        padding:6px 10px;
+        border-radius:999px;
+        font-size:11px;
+        font-weight:800;
+        text-transform:uppercase;
+        letter-spacing:.5px;
+        margin-bottom:12px;
+    }
+    .auth-form-panel h2 { font-size:27px; color:#0f172a; margin-bottom:8px; }
+    .auth-form-panel .form-intro { color:#64748b; font-size:14px; margin:0 0 24px; line-height:1.5; }
+    .form-note {
+        margin-top:16px;
+        padding:10px 12px;
+        border-radius:9px;
+        background:#f8fafc;
+        border:1px solid #e2e8f0;
+        color:#64748b;
+        font-size:11px;
+        text-align:center;
+        line-height:1.4;
+    }
+    .form-note b { color:#334155; }
+    .register-highlight {
+        margin:0 0 18px;
+        padding:12px 14px;
+        background:linear-gradient(135deg,#f0fdf4,#ecfdf5);
+        border:1px solid #bbf7d0;
+        border-radius:11px;
+        color:#166534;
+        font-size:13px;
+        line-height:1.4;
+    }
+    .register-highlight b { font-size:15px; }
+
+    .login-primary { background:linear-gradient(135deg,#2563eb,#1d4ed8); }
+    .login-register { background:linear-gradient(135deg,#16a34a,#15803d); }
+
+    @media(max-width: 820px) {
+        .auth-layout { grid-template-columns: 1fr; }
+        .auth-hero { min-height: auto; padding: 34px 28px 30px; }
+        .auth-hero h1 { font-size: 32px; }
+        .hero-subtitle { font-size: 15px; }
+        .benefit-list { grid-template-columns: 1fr 1fr; }
+        .auth-form-panel { padding: 34px 28px 40px; }
+    }
+
+    @media(max-width: 520px) {
+        .container { margin: 0 auto; border-radius: 0; min-height: 100vh; }
+        .auth-hero { padding: 28px 22px 26px; }
+        .brand-mini { margin-bottom: 18px; }
+        .auth-hero h1 { font-size: 29px; }
+        .free-badge { width:100%; justify-content:center; }
+        .benefit-list { grid-template-columns: 1fr; gap: 10px; }
+        .auth-form-panel { padding: 28px 22px 35px; }
     }
 
     label{ display:block; font-weight:700; font-size:14px; margin-top:15px; color:#475569; }
@@ -147,9 +284,6 @@
     @media(min-width: 640px) {
         body { padding: 20px; }
         .container { margin: 40px auto; }
-        .banner-login { height: 180px; }
-        .banner-login h1 { font-size: 30px; }
-        #authScreen { padding: 45px; }
         .app-inner-content { padding: 40px; }
         .chart-container { height: 300px; }
     }
@@ -162,79 +296,108 @@
 
     <!-- TELA DE AUTENTICAÇÃO, REGISTRO E RECUPERAÇÃO -->
     <div id="authScreen">
-        <div class="banner-login">
-            <h1>Questões Online</h1>
-        </div>
+        <div class="auth-layout">
+            <section class="auth-hero">
+                <div class="hero-content">
+                    <div class="brand-mini"><span>📝</span> QUESTÕES ONLINE</div>
+                    <h1>Transforme seu material de estudo em <strong>questões.</strong></h1>
+                    <p class="hero-subtitle">Estude para concursos, leis, códigos tributários, apostilas e muito mais com questões geradas por Inteligência Artificial a partir do seu próprio PDF.</p>
 
-        <div style="max-width: 480px; margin: 30px auto 0 auto;">
-            <div id="authErro"></div>
+                    <div class="free-badge">
+                        <span style="font-size:24px;">🎁</span>
+                        <span><b>30 QUESTÕES GRÁTIS</b><small>Teste a plataforma no seu primeiro cadastro</small></span>
+                    </div>
 
-            <!-- Formulário de Login -->
-            <div id="formLoginDiv">
-                <h2 style="text-align:center; font-size: 22px;">Acesse sua Conta</h2>
-                <p style="text-align:center; color:#64748b; font-size: 14px; margin-bottom: 20px;">Entre para gerar simulados e acompanhar seu desempenho</p>
-
-                <label>E-mail:</label>
-                <input type="email" id="loginEmail" placeholder="seu@email.com">
-
-                <label>Senha:</label>
-                <input type="password" id="loginSenha" placeholder="Sua senha">
-
-                <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
-                    <a href="#" onclick="mostrarEsqueciSenha(true)" style="color:#2563eb; text-decoration:none; font-size:13px;">Esqueceu sua senha?</a>
+                    <div class="benefit-list">
+                        <div class="benefit-item"><span class="benefit-icon">📄</span><span><b>Envie seu PDF</b><br>Use o material que você já está estudando.</span></div>
+                        <div class="benefit-item"><span class="benefit-icon">🤖</span><span><b>Questões geradas por IA</b><br>Crie exercícios baseados no conteúdo do seu material.</span></div>
+                        <div class="benefit-item"><span class="benefit-icon">✅</span><span><b>Correção automática</b><br>Responda e veja seu desempenho.</span></div>
+                        <div class="benefit-item"><span class="benefit-icon">📊</span><span><b>Acompanhe sua evolução</b><br>Consulte seu histórico e resultados.</span></div>
+                    </div>
                 </div>
+            </section>
 
-                <button onclick="fazerLogin()">Entrar</button>
-                <button onclick="mostrarTelaRegistro(true)" class="btn-secondary">Criar Nova Conta</button>
-            </div>
+            <section class="auth-form-panel">
+                <div class="auth-form-inner">
+                    <div id="authErro"></div>
 
-            <!-- Formulário de Criação de Conta -->
-            <div id="formRegistroDiv" class="hidden">
-                <h2 style="text-align:center; font-size: 22px; color:#059669;">Criar Nova Conta</h2>
-                <p style="text-align:center; color:#64748b; font-size: 14px; margin-bottom: 20px;">Cadastre-se gratuitamente para começar</p>
+                    <!-- Formulário de Login -->
+                    <div id="formLoginDiv">
+                        <span class="form-kicker">Área do aluno</span>
+                        <h2>Acesse sua conta</h2>
+                        <p class="form-intro">Entre para continuar seus estudos e gerar novos simulados.</p>
 
-                <label>E-mail:</label>
-                <input type="email" id="regEmail" placeholder="seu@email.com">
+                        <label>E-mail:</label>
+                        <input type="email" id="loginEmail" placeholder="seu@email.com">
 
-                <label>Senha:</label>
-                <input type="password" id="regSenha" placeholder="Crie uma senha forte">
+                        <label>Senha:</label>
+                        <input type="password" id="loginSenha" placeholder="Sua senha">
 
-                <label>Confirme a Senha:</label>
-                <input type="password" id="regConfirmaSenha" placeholder="Digite a senha novamente">
+                        <div style="display:flex; justify-content:flex-end; margin-top:8px;">
+                            <a href="#" onclick="mostrarEsqueciSenha(true)" style="color:#2563eb; text-decoration:none; font-size:13px; font-weight:700;">Esqueceu sua senha?</a>
+                        </div>
 
-                <button onclick="fazerRegistro()" class="btn-secondary">Concluir Cadastro</button>
+                        <button onclick="fazerLogin()" class="login-primary">Entrar na minha conta</button>
+                        <button onclick="mostrarTelaRegistro(true)" class="login-register">🎁 Criar conta e ganhar 30 questões grátis</button>
 
-                <p style="text-align:center; margin-top: 20px;">
-                    <a href="#" onclick="mostrarTelaRegistro(false)" style="color:#64748b; text-decoration:none; font-size:13px;">← Voltar para o login</a>
-                </p>
-            </div>
+                        <div class="form-note"><b>Comece sem complicação.</b> Cadastro rápido com apenas e-mail e senha.</div>
+                    </div>
 
-            <!-- Formulário de Recuperação de Senha -->
-            <div id="formEsqueciDiv" class="hidden">
-                <h2 style="text-align:center; font-size: 22px;">Recuperação de Senha</h2>
-                <p style="text-align:center; color:#64748b; font-size: 14px; margin-bottom: 20px;">Informe seu e-mail cadastrado</p>
+                    <!-- Formulário de Criação de Conta -->
+                    <div id="formRegistroDiv" class="hidden">
+                        <span class="form-kicker" style="color:#15803d; background:#f0fdf4; border-color:#bbf7d0;">Comece grátis</span>
+                        <h2 style="color:#15803d;">Crie sua conta</h2>
+                        <p class="form-intro">Cadastre-se e comece agora. Você recebe <b>30 questões grátis</b> para testar a plataforma.</p>
 
-                <label>E-mail cadastrado:</label>
-                <input type="email" id="recoveryEmail" placeholder="seu@email.com">
-                <button onclick="solicitarTokenRecuperacao()">Enviar Token de Recuperação</button>
+                        <div class="register-highlight">🎁 <b>30 questões grátis no primeiro cadastro!</b><br>Sem precisar comprar créditos para começar.</div>
 
-                <div id="blocoRedefinicao" class="hidden" style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
-                    <label>Token recebido:</label>
-                    <input type="text" id="recoveryToken" placeholder="Cole o token aqui">
+                        <label>E-mail:</label>
+                        <input type="email" id="regEmail" placeholder="seu@email.com">
 
-                    <label>Nova Senha:</label>
-                    <input type="password" id="recoveryNovaSenha" placeholder="Digite a nova senha">
+                        <label>Senha:</label>
+                        <input type="password" id="regSenha" placeholder="Crie uma senha forte">
 
-                    <label>Confirme a Nova Senha:</label>
-                    <input type="password" id="recoveryConfirmaSenha" placeholder="Repita a nova senha">
+                        <label>Confirme a Senha:</label>
+                        <input type="password" id="regConfirmaSenha" placeholder="Digite a senha novamente">
 
-                    <button onclick="executarRedefinicaoSenha()" class="btn-secondary">Salvar Nova Senha</button>
+                        <button onclick="fazerRegistro()" class="login-register">Começar com 30 questões grátis</button>
+
+                        <div class="form-note">Você poderá testar a plataforma antes de decidir comprar créditos.</div>
+
+                        <p style="text-align:center; margin-top:20px;">
+                            <a href="#" onclick="mostrarTelaRegistro(false)" style="color:#64748b; text-decoration:none; font-size:13px; font-weight:700;">← Voltar para o login</a>
+                        </p>
+                    </div>
+
+                    <!-- Formulário de Recuperação de Senha -->
+                    <div id="formEsqueciDiv" class="hidden">
+                        <span class="form-kicker">Segurança</span>
+                        <h2>Recuperar senha</h2>
+                        <p class="form-intro">Informe seu e-mail cadastrado para receber o token de recuperação.</p>
+
+                        <label>E-mail cadastrado:</label>
+                        <input type="email" id="recoveryEmail" placeholder="seu@email.com">
+                        <button onclick="solicitarTokenRecuperacao()">Enviar Token de Recuperação</button>
+
+                        <div id="blocoRedefinicao" class="hidden" style="margin-top:20px; border-top:1px solid #e2e8f0; padding-top:15px;">
+                            <label>Token recebido:</label>
+                            <input type="text" id="recoveryToken" placeholder="Cole o token aqui">
+
+                            <label>Nova Senha:</label>
+                            <input type="password" id="recoveryNovaSenha" placeholder="Digite a nova senha">
+
+                            <label>Confirme a Nova Senha:</label>
+                            <input type="password" id="recoveryConfirmaSenha" placeholder="Repita a nova senha">
+
+                            <button onclick="executarRedefinicaoSenha()" class="btn-secondary">Salvar Nova Senha</button>
+                        </div>
+
+                        <p style="text-align:center; margin-top:20px;">
+                            <a href="#" onclick="mostrarEsqueciSenha(false)" style="color:#64748b; text-decoration:none; font-size:13px; font-weight:700;">← Voltar para o Login</a>
+                        </p>
+                    </div>
                 </div>
-
-                <p style="text-align:center; margin-top: 20px;">
-                    <a href="#" onclick="mostrarEsqueciSenha(false)" style="color:#64748b; text-decoration:none; font-size:13px;">← Voltar para o Login</a>
-                </p>
-            </div>
+            </section>
         </div>
     </div>
 
