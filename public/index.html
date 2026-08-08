@@ -873,8 +873,11 @@ async function carregarEstatisticasAdmin() {
     let token = localStorage.getItem(TOKEN_KEY);
     try {
         let res = await fetch('/api/admin/estatisticas', { headers: { 'Authorization': `Bearer ${token}` } });
-        if (!res.ok) return;
         let data = await res.json();
+        if (!res.ok) {
+            document.getElementById('adminStatsGerais').innerHTML = `<div class="stat-card" style="grid-column: 1/-1;"><p style="color: #dc2626;">Erro ao carregar: ${data.erro || 'Acesso negado'}</p></div>`;
+            return;
+        }
 
         const formatMoney = (val) => Number(val).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
         const formatNum = (val) => Number(val).toLocaleString('pt-BR');
