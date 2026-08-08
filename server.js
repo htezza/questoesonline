@@ -366,7 +366,7 @@ app.get('/api/admin/estatisticas', verificarToken, verificarAdmin, async (req, r
         let invRow = await getQuery(`SELECT valor FROM configuracoes WHERE chave = 'investimento_marketing'`);
         let investimentoMarketing = invRow ? Number(invRow.valor) : 0;
         let investimentoTotal = Number(investimentoMarketing) || 0;
-        let cac = usuariosCadastrados > 0 ? (investimentoTotal / usuariosCadastrados) : 0;
+        let cac = usuarios_cadastrados > 0 ? (investimentoTotal / usuarios_cadastrados) : 0;
 
         let ticket_medio = compradores > 0 ? (faturamento / compradores) : 0;
         let pct_compraram = usuarios_cadastrados > 0 ? ((compradores / usuarios_cadastrados) * 100) : 0;
