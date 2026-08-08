@@ -96,6 +96,12 @@ db.serialize(() => {
         is_pago INTEGER DEFAULT 0,
         data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS configuracoes (
+    chave TEXT PRIMARY KEY,
+    valor TEXT
+    )`);
+    
 });
 
 function verificarToken(req, res, next) {
@@ -356,20 +362,22 @@ app.get('/api/admin/estatisticas', verificarToken, verificarAdmin, async (req, r
         let creditos_vendidos = comprasStats.total_creditos || 0;
         let compradores = comprasStats.compradores || 0;
 
+        // Buscar investimento e calcular CAC corretamente
+        let invRow = await getQuery(`SELECT valor FROM configuracoes WHERE chave = 'investimento_marketing'`);
+        let investimentoMarketing = invRow ? Number(invRow.valor) : 0;
+        let cac = compradores > 0 ? (investimentoMarketing / compradores) : 0;
+
         let ticket_medio = compradores > 0 ? (faturamento / compradores) : 0;
         let pct_compraram = usuarios_cadastrados > 0 ? ((compradores / usuarios_cadastrados) * 100) : 0;
 
         let rebuyStats = await getQuery(`SELECT COUNT(*) as c FROM (SELECT usuario_id FROM compras GROUP BY usuario_id HAVING COUNT(*) > 1)`);
         let compraram_novamente = rebuyStats.c || 0;
 
-        // Custo Inteligência Artificial Aproximado (Gemini 3.1 Flash Lite) 
-        // Aprox R$ 0,001 (1 décimo de centavo) gasto por questão incluindo Input e Output.
         let total_questoes = q_gratis + q_pagas;
         let custo_ia = total_questoes * 0.001; 
         
         let lucro_liquido = faturamento - custo_ia;
         let ltv = compradores > 0 ? faturamento / compradores : 0;
-        let cac = 0; // Requer input manual ou integração com FB Ads/Google Ads
 
         res.json({
             usuarios_cadastrados,
@@ -390,6 +398,14 @@ app.get('/api/admin/estatisticas', verificarToken, verificarAdmin, async (req, r
     } catch (error) {
         res.status(500).json({ erro: "Erro interno de métricas: " + error.message });
     }
+});
+
+app.post('/api/admin/investimento', verificarToken, verificarAdmin, (req, res) => {
+    let { investimento } = req.body;
+    db.run(`INSERT OR REPLACE INTO configuracoes (chave, valor) VALUES ('investimento_marketing', ?)`, [investimento], (err) => {
+        if (err) return res.status(500).json({ erro: "Erro ao salvar investimento." });
+        res.json({ sucesso: true });
+    });
 });
 
 app.get('/api/historico', verificarToken, (req, res) => {
