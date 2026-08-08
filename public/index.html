@@ -375,6 +375,16 @@
                     <div class="stat-card"><h3>...</h3><p>Carregando...</p></div>
                 </div>
 
+                <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 25px;">
+                    <h3 style="margin-top: 0; font-size: 16px;">💰 Configurar Custo de Aquisição (CAC)</h3>
+                    <p style="font-size: 13px; color: #64748b;">Informe o valor total investido em marketing e vendas até o momento:</p>
+    
+                    <div style="display: flex; gap: 10px; max-width: 400px;">
+                        <input type="number" id="inputInvestimentoMarketing" placeholder="Ex: 1500.00" style="margin: 0;">
+                        <button onclick="salvarInvestimentoAdmin()" style="width: auto; margin: 0; background: #16a34a; padding: 0 20px;">Salvar</button>
+                    </div>
+                </div>
+
                 <h3 style="margin-top: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">👥 Gerenciamento de Usuários</h3>
                 <div class="admin-table-wrapper">
                     <table class="admin-table">
@@ -518,6 +528,22 @@ async function fazerRegistro() {
         console.error("Erro detalhado:", e);
         document.getElementById("authErro").innerText = "Erro: " + e.message; 
     }
+}
+
+async function salvarInvestimentoAdmin() {
+    let token = localStorage.getItem(TOKEN_KEY);
+    let valor = document.getElementById("inputInvestimentoMarketing").value;
+
+    let res = await fetch('/api/admin/investimento', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ investimento: valor })
+    });
+    let data = await res.json();
+    if (!res.ok) { alert(data.erro); return; }
+
+    alert("Investimento atualizado com sucesso!");
+    carregarEstatisticasAdmin(); // Recarrega as estatísticas para atualizar o CAC na tela
 }
 
 async function carregarDadosUsuario(token) {
@@ -887,10 +913,10 @@ async function carregarListaUsuariosAdmin() {
             <tr>
                 <td style="color: #64748b;">#${u.id}</td>
                 <td><b>${u.email}</b></td>
-                <td><span style="padding: 3px 8px; border-radius:6px; font-size:11px; font-weight:bold; background: ${u.role === 'admin' ? '#fee2e2;color:#991b1b' : '#f1f5f9;color:#475569'};">${u.role.toUpperCase()}</span></td>
                 <td>
                     <input type="number" id="inputCreditos_${u.id}" value="${u.creditos}" style="width: 80px; padding: 6px; margin: 0; display: inline-block;">
                 </td>
+                <td><span style="padding: 3px 8px; border-radius:6px; font-size:11px; font-weight:bold; background: ${u.role === 'admin' ? '#fee2e2;color:#991b1b' : '#f1f5f9;color:#475569'};">${u.role.toUpperCase()}</span></td>
                 <td style="text-align: center;">
                     <button onclick="salvarCreditosAdmin(${u.id})" style="width: auto; padding: 6px 12px; margin: 0; font-size: 11px; background: #16a34a;">💾 Salvar</button>
                 </td>
