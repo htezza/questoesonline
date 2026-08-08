@@ -379,7 +379,14 @@ app.get('/api/admin/estatisticas', verificarToken, verificarAdmin, async (req, r
        
         
         let lucro_liquido = faturamento - custo_ia - investimentoTotal;
-        let ltv = compradores > 0 ? faturamento / compradores : 0;
+        let ltvQuery = await getQuery(`
+            SELECT AVG(total_gasto) as ltv_medio FROM (
+                SELECT SUM(valor) as total_gasto 
+                FROM compras 
+                GROUP BY usuario_id
+            )
+        `);
+        let ltv = ltvQuery && ltvQuery.ltv_medio ? ltvQuery.ltv_medio : 0;
 
         res.json({
             usuarios_cadastrados,
