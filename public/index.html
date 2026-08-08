@@ -366,7 +366,16 @@
                         <button onclick="fazerLogin()" class="login-primary">Entrar na minha conta</button>
                         <button onclick="mostrarTelaRegistro(true)" class="login-register">🎁 Criar conta e ganhar 30 questões grátis</button>
 
-                        <div class="form-note"><b>Comece sem complicação.</b> Cadastro rápido com apenas e-mail e senha.</div>
+                        <div class="form-note">
+    <b>Comece sem complicação.</b> Cadastro rápido com apenas e-mail e senha.
+    <div style="margin-top:10px; padding-top:10px; border-top:1px solid #e2e8f0;">
+        <b>💬 Precisa de ajuda?</b><br>
+        Dúvidas, sugestões ou reclamações:<br>
+        📧 <a href="mailto:htquestoesonline@gmail.com" style="color:#2563eb; text-decoration:none; font-weight:700;">htquestoesonline@gmail.com</a>
+        &nbsp;·&nbsp;
+        📷 <a href="https://www.instagram.com/ht.questoesonline/" target="_blank" rel="noopener noreferrer" style="color:#2563eb; text-decoration:none; font-weight:700;">@ht.questoesonline</a>
+    </div>
+</div>
                     </div>
 
                     <!-- Formulário de Criação de Conta -->
@@ -1121,7 +1130,7 @@ async function carregarEstatisticasAdmin() {
             <div class="stat-card"><h3>${formatNum(data.compraram_novamente)}</h3><p>Compraram Novamente</p></div>
             <div class="stat-card"><h3 style="color:#dc2626">${formatMoney(data.custo_ia)}</h3><p>Custo Estimado da IA</p></div>    
             <div class="stat-card"><h3 style="color:#dc2626">${formatMoney(data.cac)}</h3><p>Custo Por Usuário</p></div>
-            <div class="stat-card"><h3 style="color:#059669">${formatMoney(data.ltv)}</h3><p>Ticket Médio</p></div>
+            <div class="stat-card"><h3 style="color:#059669">${formatMoney(data.ltv)}</h3><p>LTV</p></div>
             <div class="stat-card"><h3 style="color:#059669">${formatMoney(data.lucro_liquido)}</h3><p>Lucro Líquido</p></div>
         `;
     } catch(e) {
