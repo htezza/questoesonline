@@ -345,7 +345,7 @@ app.get('/api/admin/estatisticas', verificarToken, verificarAdmin, async (req, r
         });
         
         let usuarios_cadastrados = (await getQuery(`SELECT COUNT(*) as c FROM usuarios`)).c || 0;
-        let usuarios_ativos = (await getQuery(`SELECT COUNT(DISTINCT usuario_id) as c FROM geracoes`)).c || 0;
+        let usuarios_ativos = (await getQuery(`SELECT COUNT(DISTINCT usuario_id) as c FROM geracoes WHERE data >= datetime('now', '-2 months')`)).c || 0;
         let pdfs_enviados = (await getQuery(`SELECT COUNT(*) as c FROM geracoes`)).c || 0;
         
         let q_gratis = (await getQuery(`SELECT SUM(quantidade) as c FROM geracoes WHERE is_pago = 0`)).c || 0;
