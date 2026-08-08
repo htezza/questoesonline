@@ -79,6 +79,23 @@ db.serialize(() => {
         token TEXT,
         expiracao INTEGER
     )`);
+
+    // --- NOVAS TABELAS DE GESTÃO E MÉTRICAS (Invisível para o usuário) ---
+    db.run(`CREATE TABLE IF NOT EXISTS compras (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        usuario_id INTEGER,
+        quantidade INTEGER,
+        valor REAL,
+        data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS geracoes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        usuario_id INTEGER,
+        quantidade INTEGER,
+        is_pago INTEGER DEFAULT 0,
+        data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`);
 });
 
 function verificarToken(req, res, next) {
@@ -145,8 +162,6 @@ app.post('/api/criar-pagamento', verificarToken, async (req, res) => {
 
     try {
         let preference = new Preference(mpClient);
-        
-        // Garante que a URL utilize https:// obrigatoriamente para o Mercado Pago aceitar
         let hostUrl = 'https://' + req.get('host');
 
         let respostaMp = await preference.create({
@@ -156,7 +171,8 @@ app.post('/api/criar-pagamento', verificarToken, async (req, res) => {
                     quantity: 1,
                     unit_price: Number(pacote.preco)
                 }],
-                external_reference: `${usuarioId}_${pacote.quantidade}`,
+                // AQUI EMBUTIMOS O PREÇO PARA REGISTRO INTERNO NO WEBHOOK SEM ALTERAR O FUNCIONAMENTO
+                external_reference: `${usuarioId}_${pacote.quantidade}_${pacote.preco}`,
                 back_urls: {
                     success: `${hostUrl}/?pagamento=sucesso`,
                     failure: `${hostUrl}/?pagamento=falha`,
@@ -174,7 +190,7 @@ app.post('/api/criar-pagamento', verificarToken, async (req, res) => {
     }
 });
 
-// WEBHOOK DO MERCADO PAGO (Acredita automaticamente)
+// WEBHOOK DO MERCADO PAGO
 app.post('/api/webhook/pagamento', async (req, res) => {
     let event = req.body;
     try {
@@ -190,8 +206,14 @@ app.post('/api/webhook/pagamento', async (req, res) => {
                     let partes = pagData.external_reference.split('_');
                     let usuarioId = partes[0];
                     let creditosComprados = Number(partes[1]);
+                    let valorPago = Number(partes[2]) || 0; // Recuperando o valor para a tabela 'compras'
 
-                    db.run(`UPDATE usuarios SET creditos = creditos + ? WHERE id = ?`, [creditosComprados, usuarioId]);
+                    db.run(`UPDATE usuarios SET creditos = creditos + ? WHERE id = ?`, [creditosComprados, usuarioId], () => {
+                        // Inserindo no histórico gerencial financeiro
+                        if(valorPago > 0) {
+                            db.run(`INSERT INTO compras (usuario_id, quantidade, valor) VALUES (?, ?, ?)`, [usuarioId, creditosComprados, valorPago]);
+                        }
+                    });
                 }
             }
         }
@@ -315,6 +337,61 @@ app.post('/api/admin/creditos', verificarToken, verificarAdmin, (req, res) => {
     });
 });
 
+// === NOVO ENDPOINT DE ESTATÍSTICAS PARA O DASHBOARD ADMIN ===
+app.get('/api/admin/estatisticas', verificarToken, verificarAdmin, async (req, res) => {
+    try {
+        const getQuery = (query, params = []) => new Promise((resolve, reject) => {
+            db.get(query, params, (err, row) => err ? reject(err) : resolve(row));
+        });
+        
+        let usuarios_cadastrados = (await getQuery(`SELECT COUNT(*) as c FROM usuarios`)).c || 0;
+        let usuarios_ativos = (await getQuery(`SELECT COUNT(DISTINCT usuario_id) as c FROM geracoes`)).c || 0;
+        let pdfs_enviados = (await getQuery(`SELECT COUNT(*) as c FROM geracoes`)).c || 0;
+        
+        let q_gratis = (await getQuery(`SELECT SUM(quantidade) as c FROM geracoes WHERE is_pago = 0`)).c || 0;
+        let q_pagas = (await getQuery(`SELECT SUM(quantidade) as c FROM geracoes WHERE is_pago = 1`)).c || 0;
+        
+        let comprasStats = await getQuery(`SELECT SUM(quantidade) as total_creditos, SUM(valor) as faturamento, COUNT(DISTINCT usuario_id) as compradores FROM compras`);
+        let faturamento = comprasStats.faturamento || 0;
+        let creditos_vendidos = comprasStats.total_creditos || 0;
+        let compradores = comprasStats.compradores || 0;
+
+        let ticket_medio = compradores > 0 ? (faturamento / compradores) : 0;
+        let pct_compraram = usuarios_cadastrados > 0 ? ((compradores / usuarios_cadastrados) * 100) : 0;
+
+        let rebuyStats = await getQuery(`SELECT COUNT(*) as c FROM (SELECT usuario_id FROM compras GROUP BY usuario_id HAVING COUNT(*) > 1)`);
+        let compraram_novamente = rebuyStats.c || 0;
+
+        // Custo Inteligência Artificial Aproximado (Gemini 3.1 Flash Lite) 
+        // Aprox R$ 0,001 (1 décimo de centavo) gasto por questão incluindo Input e Output.
+        let total_questoes = q_gratis + q_pagas;
+        let custo_ia = total_questoes * 0.001; 
+        
+        let lucro_liquido = faturamento - custo_ia;
+        let ltv = compradores > 0 ? faturamento / compradores : 0;
+        let cac = 0; // Requer input manual ou integração com FB Ads/Google Ads
+
+        res.json({
+            usuarios_cadastrados,
+            usuarios_ativos,
+            pdfs_enviados,
+            questoes_gratuitas_geradas: q_gratis,
+            questoes_pagas_geradas: q_pagas,
+            creditos_vendidos,
+            faturamento,
+            ticket_medio,
+            pct_compraram,
+            compraram_novamente,
+            custo_ia,
+            cac,
+            ltv,
+            lucro_liquido
+        });
+    } catch (error) {
+        res.status(500).json({ erro: "Erro interno de métricas: " + error.message });
+    }
+});
+
 app.get('/api/historico', verificarToken, (req, res) => {
     db.all(`SELECT acertos, total, nota, data FROM historico WHERE usuario_id = ? ORDER BY id ASC`, [req.usuarioId], (err, rows) => {
         if (err) return res.status(500).json({ erro: "Erro ao buscar histórico." });
@@ -342,7 +419,6 @@ app.post('/api/gerar-questoes', verificarToken, iaLimiter, async (req, res) => {
     let { texto, quantidade, nivel } = req.body;
     const usuarioId = req.usuarioId;
 
-    // Proteção contra múltiplas requisições simultâneas do mesmo usuário
     if (emProcessamento.has(usuarioId)) {
         return res.status(429).json({ erro: "Você já possui uma geração de questões em andamento. Aguarde terminar." });
     }
@@ -443,21 +519,26 @@ Texto: ${textoDistribuido}`;
                 throw new Error("A IA retornou uma estrutura vazia.");
             }
 
-            // Como a API garante o formato, o parse direto funciona sem falhas e sem códigos malabaristas
             let questoes = JSON.parse(dados.candidates[0].content.parts[0].text);
-
             questoes = questoes.slice(0, quantidade);
 
-            db.run(`UPDATE usuarios SET creditos = creditos - ? WHERE id = ?`, [questoes.length, usuarioId]);
-
-            db.get(`SELECT creditos FROM usuarios WHERE id = ?`, [usuarioId], (err, rowAtualizado) => {
-                res.json({ sucesso: true, questoes, creditosRestantes: rowAtualizado ? rowAtualizado.creditos : 0 });
+            // TIRA OS CRÉDITOS DO USUÁRIO
+            db.run(`UPDATE usuarios SET creditos = creditos - ? WHERE id = ?`, [questoes.length, usuarioId], () => {
+                
+                // REGISTRA A GERAÇÃO DE FORMA OCULTA PARA O DASHBOARD
+                db.get(`SELECT COUNT(id) as c FROM compras WHERE usuario_id = ?`, [usuarioId], (err, resCompras) => {
+                    let isPago = (resCompras && resCompras.c > 0) ? 1 : 0;
+                    db.run(`INSERT INTO geracoes (usuario_id, quantidade, is_pago) VALUES (?, ?, ?)`, [usuarioId, questoes.length, isPago]);
+                    
+                    db.get(`SELECT creditos FROM usuarios WHERE id = ?`, [usuarioId], (err, rowAtualizado) => {
+                        res.json({ sucesso: true, questoes, creditosRestantes: rowAtualizado ? rowAtualizado.creditos : 0 });
+                    });
+                });
             });
 
         } catch (error) {
             res.status(500).json({ erro: "Erro ao processar: " + error.message });
         } finally {
-            // Libera a trava para que o usuário possa fazer novas requisições futuramente
             emProcessamento.delete(usuarioId);
         }
     });
