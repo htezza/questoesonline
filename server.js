@@ -41,7 +41,17 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const MODELO_GEMINI = "gemini-3.1-flash-lite";
 
 // CONFIGURAÇÃO DO MERCADO PAGO (Cole seu Access Token do MP abaixo)
-const mpClient = new MercadoPagoConfig({ accessToken: 'APP_USR-5232629439354822-080414-00c1e350ba8fd72cacb2aafa69f6d94b-109548169' });
+const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN;
+
+if (!MP_ACCESS_TOKEN) {
+    console.error("ERRO CRÍTICO: A variável de ambiente MP_ACCESS_TOKEN não está definida.");
+    process.exit(1);
+}
+
+const mpClient = new MercadoPagoConfig({
+    accessToken: MP_ACCESS_TOKEN
+});
+
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
