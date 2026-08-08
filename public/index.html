@@ -365,9 +365,17 @@
 
             <!-- ABA 4: PAINEL ADMINISTRATIVO -->
             <div id="tabAdmin" class="hidden">
-                <h1>⚙️ Gestão de Usuários</h1>
-                <p style="text-align:center;color:#64748b;">Gerencie os créditos e perfis dos usuários cadastrados.</p>
+                <h1>⚙️ Gestão de Plataforma</h1>
+                <p style="text-align:center;color:#64748b;">Acompanhe métricas de negócio e gerencie usuários.</p>
 
+                <!-- NOVO DASHBOARD EXECUTIVO -->
+                <h3 style="margin-top: 25px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">📈 Dashboard Executivo</h3>
+                <div class="stats-grid" id="adminStatsGerais" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px;">
+                    <!-- Preenchido via Javascript via API -->
+                    <div class="stat-card"><h3>...</h3><p>Carregando...</p></div>
+                </div>
+
+                <h3 style="margin-top: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">👥 Gerenciamento de Usuários</h3>
                 <div class="admin-table-wrapper">
                     <table class="admin-table">
                         <thead>
@@ -427,6 +435,7 @@ function mudarAba(aba, elemento) {
         carregarEstatisticasServidor();
     } else if(aba === 'admin') {
         document.getElementById('tabAdmin').classList.remove('hidden');
+        carregarEstatisticasAdmin(); // NOVA CHAMADA AO DASHBOARD
         carregarListaUsuariosAdmin();
     }
 }
@@ -830,6 +839,38 @@ async function limparHistoricoServidor() {
     if(confirm("Deseja apagar todo o histórico?")) {
         await fetch('/api/historico', { method: 'DELETE', headers: { 'Authorization': `Bearer ${localStorage.getItem(TOKEN_KEY)}` }});
         carregarEstatisticasServidor();
+    }
+}
+
+// NOVA FUNÇÃO: CARREGAR ESTATÍSTICAS DE ADMIN
+async function carregarEstatisticasAdmin() {
+    let token = localStorage.getItem(TOKEN_KEY);
+    try {
+        let res = await fetch('/api/admin/estatisticas', { headers: { 'Authorization': `Bearer ${token}` } });
+        if (!res.ok) return;
+        let data = await res.json();
+
+        const formatMoney = (val) => Number(val).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+        const formatNum = (val) => Number(val).toLocaleString('pt-BR');
+
+        document.getElementById('adminStatsGerais').innerHTML = `
+            <div class="stat-card"><h3>${formatNum(data.usuarios_cadastrados)}</h3><p>Usuários Cadastrados</p></div>
+            <div class="stat-card"><h3>${formatNum(data.usuarios_ativos)}</h3><p>Usuários Ativos</p></div>
+            <div class="stat-card"><h3>${formatNum(data.pdfs_enviados)}</h3><p>PDFs Enviados</p></div>
+            <div class="stat-card"><h3>${formatNum(data.questoes_gratuitas_geradas)}</h3><p>Questões Gratuitas</p></div>
+            <div class="stat-card"><h3>${formatNum(data.questoes_pagas_geradas)}</h3><p>Questões Pagas</p></div>
+            <div class="stat-card"><h3 style="color:#16a34a">${formatNum(data.creditos_vendidos)}</h3><p>Créditos Vendidos</p></div>
+            <div class="stat-card"><h3 style="color:#2563eb">${formatMoney(data.faturamento)}</h3><p>Faturamento</p></div>
+            <div class="stat-card"><h3>${formatMoney(data.ticket_medio)}</h3><p>Ticket Médio</p></div>
+            <div class="stat-card"><h3>${data.pct_compraram.toFixed(1)}%</h3><p>Conversão (Compraram)</p></div>
+            <div class="stat-card"><h3>${formatNum(data.compraram_novamente)}</h3><p>Compraram Novamente</p></div>
+            <div class="stat-card"><h3 style="color:#dc2626">${formatMoney(data.custo_ia)}</h3><p>Custo Estimado da IA</p></div>
+            <div class="stat-card"><h3 style="color:#dc2626">${formatMoney(data.cac)}</h3><p>CAC</p></div>
+            <div class="stat-card"><h3 style="color:#059669">${formatMoney(data.ltv)}</h3><p>LTV</p></div>
+            <div class="stat-card"><h3 style="color:#059669">${formatMoney(data.lucro_liquido)}</h3><p>Lucro Líquido</p></div>
+        `;
+    } catch(e) {
+        console.error("Erro ao carregar estatísticas do admin:", e);
     }
 }
 
