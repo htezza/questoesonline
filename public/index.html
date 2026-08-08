@@ -281,6 +281,43 @@
     .pacote-card h4 { margin: 0 0 8px 0; color: #1e40af; font-size: 16px; }
     .pacote-card p { font-size: 16px; font-weight: bold; color: #059669; margin-bottom: 12px; }
 
+    /* ===== Painel de Desempenho ===== */
+    .performance-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;}
+    .performance-header h1{margin-bottom:5px;}
+    .performance-header p{margin:0;color:#64748b;font-size:14px;}
+    .performance-highlight{display:flex;align-items:center;justify-content:space-between;gap:15px;background:linear-gradient(135deg,#eff6ff,#f8fafc);border:1px solid #dbeafe;border-radius:16px;padding:18px 20px;margin-bottom:18px;box-shadow:0 4px 12px rgba(15,23,42,.03);}
+    .performance-label{display:block;font-size:11px;font-weight:800;color:#2563eb;letter-spacing:.6px;margin-bottom:3px;}
+    .performance-highlight strong{display:block;font-family:'Roboto Slab',serif;font-size:34px;color:#1e3a8a;line-height:1.1;}
+    .performance-highlight small{display:block;color:#64748b;font-size:12px;margin-top:4px;}
+    .performance-highlight-icon{width:58px;height:58px;display:grid;place-items:center;border-radius:15px;background:white;border:1px solid #dbeafe;font-size:27px;flex:0 0 auto;}
+    .performance-stats-grid{grid-template-columns:repeat(3,1fr);margin-bottom:18px;}
+    .performance-card{position:relative;padding:16px 12px;}
+    .performance-card .stat-icon{font-size:20px;margin-bottom:5px;}
+    .performance-card h3{font-size:23px;}
+    .performance-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,.85fr);gap:16px;margin-bottom:16px;}
+    .performance-bottom-grid{grid-template-columns:1fr 1.35fr;}
+    .performance-panel{padding:17px;}
+    .panel-title{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px;}
+    .panel-title h3{font-family:'Roboto Slab',serif;font-size:16px;color:#1e3a8a;margin:0 0 3px;}
+    .panel-title p{font-size:11px;margin:0;color:#94a3b8;}
+    .performance-panel .chart-container{height:265px;}
+    .chart-doughnut-container{height:220px!important;max-width:300px;}
+    .answer-legend{display:flex;justify-content:center;gap:22px;flex-wrap:wrap;font-size:12px;color:#64748b;margin-top:4px;}
+    .answer-legend span{display:flex;align-items:center;gap:6px;}
+    .legend-dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+    .legend-dot.correct{background:#22c55e;}.legend-dot.wrong{background:#ef4444;}
+    .indicator-list{display:grid;gap:0;}
+    .indicator-row{display:flex;justify-content:space-between;align-items:center;padding:12px 3px;border-bottom:1px solid #f1f5f9;font-size:13px;color:#64748b;}
+    .indicator-row:last-child{border-bottom:0;}.indicator-row strong{font-size:15px;color:#1e3a8a;}
+    .recent-results{display:grid;gap:7px;max-height:245px;overflow:auto;padding-right:2px;}
+    .recent-result-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:10px 11px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:9px;font-size:12px;}
+    .recent-result-row .sim-title{font-weight:800;color:#334155;}.recent-result-row .sim-detail{color:#64748b;}.recent-result-row .sim-score{font-weight:900;color:#166534;background:#f0fdf4;padding:4px 7px;border-radius:7px;}
+    .empty-performance{text-align:center;color:#94a3b8;font-size:12px;padding:25px 10px;}
+    .performance-tip{padding:13px 15px;border-radius:11px;background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:12px;line-height:1.45;margin-bottom:5px;}
+    .clear-history-btn{background:#ef4444!important;margin-top:18px!important;width:100%;max-width:250px;display:block;margin-left:auto!important;margin-right:auto!important;font-size:12px!important;padding:11px!important;}
+    @media(max-width:800px){.performance-grid,.performance-bottom-grid{grid-template-columns:1fr;}.performance-stats-grid{grid-template-columns:repeat(2,1fr);}}
+    @media(max-width:520px){.performance-stats-grid{grid-template-columns:1fr 1fr;gap:8px;}.performance-card{padding:12px 8px;}.performance-card h3{font-size:20px;}.performance-highlight{padding:15px;}.performance-highlight strong{font-size:29px;}.performance-header p{font-size:13px;}.recent-result-row{grid-template-columns:1fr auto;}.recent-result-row .sim-detail{grid-column:1;}.recent-result-row .sim-score{grid-column:2;grid-row:1 / span 2;align-self:center;}}
+
     @media(min-width: 640px) {
         body { padding: 20px; }
         .container { margin: 40px auto; }
@@ -563,23 +600,71 @@
                 </div>
             </div>
 
-            <!-- ABA 3: ESTATÍSTICAS -->
+            <!-- ABA 3: DESEMPENHO -->
             <div id="tabEstatisticas" class="hidden">
-                <h1>📊 Painel de Desempenho</h1>
-                <div class="stats-grid">
-                    <div class="stat-card"><h3 id="statSimulados">0</h3><p>Simulados Feitos</p></div>
-                    <div class="stat-card"><h3 id="statMedia">0.0</h3><p>Média Geral</p></div>
-                    <div class="stat-card"><h3 id="statQuestoes">0</h3><p>Questões Respondidas</p></div>
-                    <div class="stat-card"><h3 id="statMelhorNota">0.0</h3><p>Melhor Nota</p></div>
-                </div>
-
-                <div class="chart-wrapper">
-                    <div class="chart-container">
-                        <canvas id="graficoEvolucao"></canvas>
+                <div class="performance-header">
+                    <div>
+                        <h1>📊 Meu Desempenho</h1>
+                        <p>Acompanhe sua evolução, seus acertos e descubra como está seu rendimento nos simulados.</p>
                     </div>
                 </div>
-                
-                <button onclick="limparHistoricoServidor()" style="background: #ef4444; margin-top: 20px; width: 100%; max-width: 250px; display: block; margin-left: auto; margin-right: auto;">🗑️ Limpar Meu Histórico</button>
+
+                <div class="performance-highlight">
+                    <div>
+                        <span class="performance-label">🎯 APROVEITAMENTO GERAL</span>
+                        <strong id="statAproveitamento">0%</strong>
+                        <small id="statMensagem">Responda simulados para começar a acompanhar sua evolução.</small>
+                    </div>
+                    <div class="performance-highlight-icon">📈</div>
+                </div>
+
+                <div class="stats-grid performance-stats-grid">
+                    <div class="stat-card performance-card"><div class="stat-icon">📝</div><h3 id="statSimulados">0</h3><p>Simulados Feitos</p></div>
+                    <div class="stat-card performance-card"><div class="stat-icon">❓</div><h3 id="statQuestoes">0</h3><p>Questões Respondidas</p></div>
+                    <div class="stat-card performance-card"><div class="stat-icon">✅</div><h3 id="statAcertos">0</h3><p>Questões Acertadas</p></div>
+                    <div class="stat-card performance-card"><div class="stat-icon">❌</div><h3 id="statErros">0</h3><p>Questões Erradas</p></div>
+                    <div class="stat-card performance-card"><div class="stat-icon">📊</div><h3 id="statMedia">0.0</h3><p>Média das Notas</p></div>
+                    <div class="stat-card performance-card"><div class="stat-icon">🏆</div><h3 id="statMelhorNota">0.0</h3><p>Melhor Nota</p></div>
+                </div>
+
+                <div class="performance-grid">
+                    <div class="chart-wrapper performance-panel">
+                        <div class="panel-title"><div><h3>📈 Evolução do desempenho</h3><p>Veja como suas notas estão evoluindo a cada simulado.</p></div></div>
+                        <div class="chart-container"><canvas id="graficoEvolucao"></canvas></div>
+                    </div>
+
+                    <div class="chart-wrapper performance-panel performance-summary-panel">
+                        <div class="panel-title"><div><h3>🎯 Acertos x erros</h3><p>Visão geral das suas respostas.</p></div></div>
+                        <div class="chart-container chart-doughnut-container"><canvas id="graficoAcertosErros"></canvas></div>
+                        <div class="answer-legend">
+                            <span><i class="legend-dot correct"></i> Acertos <b id="legendAcertos">0</b></span>
+                            <span><i class="legend-dot wrong"></i> Erros <b id="legendErros">0</b></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="performance-grid performance-bottom-grid">
+                    <div class="chart-wrapper performance-panel">
+                        <div class="panel-title"><div><h3>📌 Seus indicadores</h3><p>Comparação entre seu início e seus resultados mais recentes.</p></div></div>
+                        <div class="indicator-list">
+                            <div class="indicator-row"><span>Primeiro resultado</span><strong id="indicadorPrimeiro">0.0</strong></div>
+                            <div class="indicator-row"><span>Último resultado</span><strong id="indicadorUltimo">0.0</strong></div>
+                            <div class="indicator-row"><span>Variação</span><strong id="indicadorVariacao">0.0</strong></div>
+                            <div class="indicator-row"><span>Melhor resultado</span><strong id="indicadorMelhor">0.0</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="chart-wrapper performance-panel">
+                        <div class="panel-title"><div><h3>🕒 Últimos simulados</h3><p>Confira seus resultados mais recentes.</p></div></div>
+                        <div class="recent-results" id="listaUltimosSimulados">
+                            <div class="empty-performance">Nenhum simulado realizado ainda.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="performance-tip" id="performanceTip">💡 <b>Dica:</b> faça simulados regularmente para acompanhar sua evolução com mais precisão.</div>
+
+                <button onclick="limparHistoricoServidor()" class="clear-history-btn">🗑️ Limpar Meu Histórico</button>
             </div>
 
             <!-- ABA 4: PAINEL ADMINISTRATIVO -->
@@ -1069,31 +1154,100 @@ async function carregarEstatisticasServidor() {
     try {
         let res = await fetch('/api/historico', { headers: { 'Authorization': `Bearer ${token}` } });
         let historico = await res.json();
-        
-        document.getElementById("statSimulados").innerText = historico.length;
-        document.getElementById("statMedia").innerText = historico.length > 0 ? (historico.reduce((acc, curr) => acc + curr.nota, 0) / historico.length).toFixed(1) : "0.0";
-        document.getElementById("statQuestoes").innerText = historico.reduce((acc, curr) => acc + (Number(curr.total) || 0), 0);
-        document.getElementById("statMelhorNota").innerText = historico.length > 0 ? Math.max(...historico.map(h => Number(h.nota) || 0)).toFixed(1) : "0.0";
+        if (!Array.isArray(historico)) historico = [];
+
+        const simulados = historico.length;
+        const questoes = historico.reduce((acc, curr) => acc + (Number(curr.total) || 0), 0);
+        const acertos = historico.reduce((acc, curr) => acc + (Number(curr.acertos) || 0), 0);
+        const erros = Math.max(0, questoes - acertos);
+        const aproveitamento = questoes > 0 ? (acertos / questoes) * 100 : 0;
+        const media = simulados > 0 ? historico.reduce((acc, curr) => acc + (Number(curr.nota) || 0), 0) / simulados : 0;
+        const melhor = simulados > 0 ? Math.max(...historico.map(h => Number(h.nota) || 0)) : 0;
+        const primeiro = simulados > 0 ? Number(historico[0].nota) || 0 : 0;
+        const ultimo = simulados > 0 ? Number(historico[simulados - 1].nota) || 0 : 0;
+        const variacao = simulados > 1 ? ultimo - primeiro : 0;
+
+        document.getElementById('statSimulados').innerText = simulados;
+        document.getElementById('statQuestoes').innerText = questoes;
+        document.getElementById('statAcertos').innerText = acertos;
+        document.getElementById('statErros').innerText = erros;
+        document.getElementById('statAproveitamento').innerText = `${aproveitamento.toFixed(0)}%`;
+        document.getElementById('statMedia').innerText = media.toFixed(1);
+        document.getElementById('statMelhorNota').innerText = melhor.toFixed(1);
+        document.getElementById('legendAcertos').innerText = acertos;
+        document.getElementById('legendErros').innerText = erros;
+        document.getElementById('indicadorPrimeiro').innerText = primeiro.toFixed(1);
+        document.getElementById('indicadorUltimo').innerText = ultimo.toFixed(1);
+        document.getElementById('indicadorMelhor').innerText = melhor.toFixed(1);
+
+        const variacaoEl = document.getElementById('indicadorVariacao');
+        variacaoEl.innerText = `${variacao >= 0 ? '+' : ''}${variacao.toFixed(1)}`;
+        variacaoEl.style.color = variacao > 0 ? '#16a34a' : variacao < 0 ? '#dc2626' : '#64748b';
+
+        const mensagem = document.getElementById('statMensagem');
+        if (!simulados) mensagem.innerText = 'Responda simulados para começar a acompanhar sua evolução.';
+        else if (aproveitamento >= 80) mensagem.innerText = 'Excelente rendimento! Continue mantendo a constância. 🚀';
+        else if (aproveitamento >= 60) mensagem.innerText = 'Bom rendimento. Continue praticando para aumentar seus acertos. 💪';
+        else mensagem.innerText = 'Continue praticando. Cada simulado ajuda a identificar onde melhorar. 📚';
+
+        const tip = document.getElementById('performanceTip');
+        if (simulados > 1 && variacao > 0) tip.innerHTML = `📈 <b>Você está evoluindo!</b> Seu último resultado está ${variacao.toFixed(1)} ponto(s) acima do primeiro.`;
+        else if (simulados > 1 && variacao < 0) tip.innerHTML = `🎯 <b>Hora de ajustar a estratégia.</b> Seu último resultado está ${Math.abs(variacao).toFixed(1)} ponto(s) abaixo do primeiro. Revise os erros e tente novamente.`;
+        else tip.innerHTML = `💡 <b>Dica:</b> faça simulados regularmente para acompanhar sua evolução com mais precisão.`;
+
         renderizarGrafico(historico);
-    } catch(e) {}
+        renderizarGraficoAcertosErros(acertos, erros);
+        renderizarUltimosSimulados(historico);
+    } catch(e) {
+        console.error('Erro ao carregar desempenho:', e);
+    }
 }
 
 function renderizarGrafico(historico) {
-    const ctx = document.getElementById('graficoEvolucao').getContext('2d');
-    window.meuGraficoInstancia = window.meuGraficoInstancia || null;
+    const canvas = document.getElementById('graficoEvolucao');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
     if(window.meuGraficoInstancia) window.meuGraficoInstancia.destroy();
-    
     window.meuGraficoInstancia = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: historico.map((_, i) => `Simulado #${i + 1}`),
+            labels: historico.map((h, i) => h.data ? new Date(h.data).toLocaleDateString('pt-BR') : `#${i + 1}`),
             datasets: [{
-                label: 'Nota alcançada', data: historico.map(h => h.nota),
-                borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, 0.2)', fill: true, tension: 0.3
+                label: 'Nota alcançada', data: historico.map(h => Number(h.nota) || 0),
+                borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.10)', fill: true, tension: .3,
+                pointRadius: 4, pointHoverRadius: 6
             }]
         },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 10 } } }
+        options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,max:10,ticks:{stepSize:2}},x:{grid:{display:false}}} }
     });
+}
+
+function renderizarGraficoAcertosErros(acertos, erros) {
+    const canvas = document.getElementById('graficoAcertosErros');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if(window.meuGraficoAcertosErros) window.meuGraficoAcertosErros.destroy();
+    const total = acertos + erros;
+    window.meuGraficoAcertosErros = new Chart(ctx, {
+        type:'doughnut',
+        data:{labels:['Acertos','Erros'],datasets:[{data: total ? [acertos,erros] : [1,0],backgroundColor:['#22c55e','#ef4444'],borderWidth:0}]},
+        options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false}}}
+    });
+}
+
+function renderizarUltimosSimulados(historico) {
+    const el = document.getElementById('listaUltimosSimulados');
+    if (!el) return;
+    if (!historico.length) { el.innerHTML = '<div class="empty-performance">Nenhum simulado realizado ainda.</div>'; return; }
+    const ultimos = [...historico].slice(-5).reverse();
+    el.innerHTML = ultimos.map((h, idx) => {
+        const total = Number(h.total) || 0;
+        const acertos = Number(h.acertos) || 0;
+        const nota = Number(h.nota) || 0;
+        const aproveitamento = total ? Math.round((acertos/total)*100) : 0;
+        const data = h.data ? new Date(h.data).toLocaleDateString('pt-BR') : 'Sem data';
+        return `<div class="recent-result-row"><span class="sim-title">Simulado ${historico.length - idx}</span><span class="sim-detail">${data} · ${acertos}/${total} acertos · ${aproveitamento}%</span><span class="sim-score">${nota.toFixed(1)}</span></div>`;
+    }).join('');
 }
 
 async function limparHistoricoServidor() {
@@ -1130,7 +1284,7 @@ async function carregarEstatisticasAdmin() {
             <div class="stat-card"><h3>${formatNum(data.compraram_novamente)}</h3><p>Compraram Novamente</p></div>
             <div class="stat-card"><h3 style="color:#dc2626">${formatMoney(data.custo_ia)}</h3><p>Custo Estimado da IA</p></div>    
             <div class="stat-card"><h3 style="color:#dc2626">${formatMoney(data.cac)}</h3><p>Custo Por Usuário</p></div>
-            <div class="stat-card"><h3 style="color:#059669">${formatMoney(data.ltv)}</h3><p>LTV</p></div>
+            <div class="stat-card"><h3 style="color:#059669">${formatMoney(data.ltv)}</h3><p>Ticket Médio</p></div>
             <div class="stat-card"><h3 style="color:#059669">${formatMoney(data.lucro_liquido)}</h3><p>Lucro Líquido</p></div>
         `;
     } catch(e) {
