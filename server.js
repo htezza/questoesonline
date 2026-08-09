@@ -98,12 +98,23 @@ db.serialize(() => {
 
     // --- NOVAS TABELAS DE GESTÃO E MÉTRICAS (Invisível para o usuário) ---
     db.run(`CREATE TABLE IF NOT EXISTS compras (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        usuario_id INTEGER,
-        quantidade INTEGER,
-        valor REAL,
-        data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )`);
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    usuario_id INTEGER,
+    quantidade INTEGER,
+    valor REAL,
+    payment_id TEXT,
+    data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)`);
+
+// Adiciona a coluna payment_id caso o banco já exista
+db.run(`ALTER TABLE compras ADD COLUMN payment_id TEXT`, (err) => {
+    // Ignora o erro caso a coluna já exista
+});
+
+// Garante que o mesmo pagamento do Mercado Pago
+// nunca seja registrado duas vezes
+db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_compras_payment_id
+        ON compras(payment_id)`);
 
     db.run(`CREATE TABLE IF NOT EXISTS geracoes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -235,34 +246,140 @@ app.post('/api/criar-pagamento', verificarToken, async (req, res) => {
 });
 
 // WEBHOOK DO MERCADO PAGO
+// WEBHOOK DO MERCADO PAGO
 app.post('/api/webhook/pagamento', async (req, res) => {
     let event = req.body;
+
     try {
         if (event.type === 'payment' || event.action === 'payment.created' || event.action === 'payment.updated') {
+
             let paymentId = event.data?.id;
+
             if (paymentId) {
+
                 let resposta = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
-                    headers: { 'Authorization': `Bearer ${mpClient.accessToken}` }
+                    headers: {
+                        'Authorization': `Bearer ${mpClient.accessToken}`
+                    }
                 });
+
                 let pagData = await resposta.json();
-                
+
                 if (pagData.status === 'approved' && pagData.external_reference) {
+
                     let partes = pagData.external_reference.split('_');
+
                     let usuarioId = partes[0];
                     let creditosComprados = Number(partes[1]);
-                    let valorPago = Number(partes[2]) || 0; // Recuperando o valor para a tabela 'compras'
+                    let valorPago = Number(partes[2]) || 0;
 
-                    db.run(`UPDATE usuarios SET creditos = creditos + ? WHERE id = ?`, [creditosComprados, usuarioId], () => {
-                        // Inserindo no histórico gerencial financeiro
-                        if(valorPago > 0) {
-                            db.run(`INSERT INTO compras (usuario_id, quantidade, valor) VALUES (?, ?, ?)`, [usuarioId, creditosComprados, valorPago]);
+                    // Usa uma transação para garantir que o pagamento
+                    // e a liberação dos créditos aconteçam juntos.
+                    db.run(`BEGIN IMMEDIATE TRANSACTION`, (err) => {
+
+                        if (err) {
+                            console.error("Erro ao iniciar transação do pagamento:", err);
+                            return;
                         }
+
+                        // Tenta registrar o pagamento.
+                        // O índice UNIQUE impede que o mesmo payment_id
+                        // seja processado novamente.
+                        db.run(
+                            `INSERT INTO compras
+                            (usuario_id, quantidade, valor, payment_id)
+                            VALUES (?, ?, ?, ?)`,
+                            [
+                                usuarioId,
+                                creditosComprados,
+                                valorPago,
+                                String(paymentId)
+                            ],
+                            function(err) {
+
+                                if (err) {
+
+                                    // Se for pagamento duplicado, simplesmente
+                                    // ignora sem adicionar créditos novamente.
+                                    if (err.message.includes('UNIQUE constraint failed')) {
+
+                                        console.log(
+                                            `Pagamento ${paymentId} já processado. Nenhum crédito adicional foi concedido.`
+                                        );
+
+                                        db.run(`ROLLBACK`, () => {});
+                                        return;
+                                    }
+
+                                    console.error(
+                                        "Erro ao registrar pagamento:",
+                                        err
+                                    );
+
+                                    db.run(`ROLLBACK`, () => {});
+                                    return;
+                                }
+
+                                // Só adiciona os créditos depois que o pagamento
+                                // foi registrado com sucesso.
+                                db.run(
+                                    `UPDATE usuarios
+                                     SET creditos = creditos + ?
+                                     WHERE id = ?`,
+                                    [
+                                        creditosComprados,
+                                        usuarioId
+                                    ],
+                                    function(err) {
+
+                                        if (err) {
+
+                                            console.error(
+                                                "Erro ao adicionar créditos:",
+                                                err
+                                            );
+
+                                            db.run(`ROLLBACK`, () => {});
+                                            return;
+                                        }
+
+                                        // Finaliza a transação
+                                        db.run(`COMMIT`, (err) => {
+
+                                            if (err) {
+
+                                                console.error(
+                                                    "Erro ao confirmar transação:",
+                                                    err
+                                                );
+
+                                                db.run(`ROLLBACK`, () => {});
+                                                return;
+                                            }
+
+                                            console.log(
+                                                `Pagamento ${paymentId} aprovado. ` +
+                                                `${creditosComprados} créditos adicionados ao usuário ${usuarioId}.`
+                                            );
+                                        });
+                                    }
+                                );
+                            }
+                        );
                     });
                 }
             }
         }
+
         res.status(200).send("OK");
+
     } catch(e) {
+
+        console.error(
+            "Erro no Webhook do Mercado Pago:",
+            e
+        );
+
         res.status(500).send("Erro Webhook");
     }
 });
