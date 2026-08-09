@@ -38,7 +38,7 @@ const emProcessamento = new Set(); // Lista para controlar quem está gerando qu
 
 // COLE SUA CHAVE DO GEMINI AQUI:
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const MODELO_GEMINI = "gemini-3.1-flash-lite";
+const MODELO_GEMINI = "gemini-3.1-flash-lite"; // Ajustado para o modelo estável padrão da API
 
 // CONFIGURAÇÃO DO MERCADO PAGO (Cole seu Access Token do MP abaixo)
 const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN;
