@@ -182,7 +182,8 @@ app.post('/api/criar-pagamento', verificarToken, async (req, res) => {
     let pacote = pacotes[pacoteId];
     if (!pacote) return res.status(400).json({ erro: "Pacote inválido." });
 
-    db.get(`SELECT cpf FROM usuarios WHERE id = ?`, [usuarioId], async (err, row) => {
+    db.get(`SELECT cpf, email FROM usuarios WHERE id = ?`, [usuarioId], async (err, row) => {
+    
         if (err) return res.status(500).json({ erro: "Erro ao verificar usuário." });
 
         let userCpf = row?.cpf || cpf;
@@ -207,11 +208,12 @@ app.post('/api/criar-pagamento', verificarToken, async (req, res) => {
                         unit_price: Number(pacote.preco)
                     }],
                     payer: {
-                        identification: {
-                            type: "CPF",
-                            number: userCpf.replace(/\D/g, '') // Garante que vão só números para o Mercado Pago
-                        }
-                    },
+    email: row?.email,
+    identification: {
+        type: "CPF",
+        number: userCpf.replace(/\D/g, '')
+    }
+},
                     // AQUI EMBUTIMOS O PREÇO PARA REGISTRO INTERNO NO WEBHOOK SEM ALTERAR O FUNCIONAMENTO
                     external_reference: `${usuarioId}_${pacote.quantidade}_${pacote.preco}`,
                     back_urls: {
