@@ -38,7 +38,7 @@ const emProcessamento = new Set(); // Lista para controlar quem está gerando qu
 
 // COLE SUA CHAVE DO GEMINI AQUI:
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const MODELO_GEMINI = "gemini-3.1-flash-lite"; // Ajustado para o modelo estável padrão da API
+const MODELO_GEMINI = "gemini-3.1-flash-lite";
 
 // CONFIGURAÇÃO DO MERCADO PAGO (Cole seu Access Token do MP abaixo)
 const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN;
@@ -71,8 +71,14 @@ db.serialize(() => {
         email TEXT UNIQUE,
         senha TEXT,
         creditos INTEGER DEFAULT 30,
-        role TEXT DEFAULT 'user'
+        role TEXT DEFAULT 'user',
+        cpf TEXT
     )`);
+
+    // Atualização silenciosa para caso o banco já exista sem a coluna cpf
+    db.run(`ALTER TABLE usuarios ADD COLUMN cpf TEXT`, (err) => {
+        // O erro é ignorado caso a coluna já exista
+    });
 
     db.run(`CREATE TABLE IF NOT EXISTS historico (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -163,7 +169,7 @@ async function fetchComRetry(url, opciones, maxTentativas = 5) {
 
 // ROTA DE PAGAMENTO (MERCADO PAGO)
 app.post('/api/criar-pagamento', verificarToken, async (req, res) => {
-    let { pacoteId } = req.body;
+    let { pacoteId, cpf } = req.body;
     let usuarioId = req.usuarioId;
 
     const pacotes = {
@@ -176,34 +182,54 @@ app.post('/api/criar-pagamento', verificarToken, async (req, res) => {
     let pacote = pacotes[pacoteId];
     if (!pacote) return res.status(400).json({ erro: "Pacote inválido." });
 
-    try {
-        let preference = new Preference(mpClient);
-        let hostUrl = 'https://' + req.get('host');
+    db.get(`SELECT cpf FROM usuarios WHERE id = ?`, [usuarioId], async (err, row) => {
+        if (err) return res.status(500).json({ erro: "Erro ao verificar usuário." });
 
-        let respostaMp = await preference.create({
-            body: {
-                items: [{
-                    title: pacote.titulo,
-                    quantity: 1,
-                    unit_price: Number(pacote.preco)
-                }],
-                // AQUI EMBUTIMOS O PREÇO PARA REGISTRO INTERNO NO WEBHOOK SEM ALTERAR O FUNCIONAMENTO
-                external_reference: `${usuarioId}_${pacote.quantidade}_${pacote.preco}`,
-                back_urls: {
-                    success: `${hostUrl}/?pagamento=sucesso`,
-                    failure: `${hostUrl}/?pagamento=falha`,
-                    pending: `${hostUrl}/?pagamento=pendente`
-                },
-                notification_url: `${hostUrl}/api/webhook/pagamento`,
-                auto_return: "approved"
-            }
-        });
+        let userCpf = row?.cpf || cpf;
+        if (!userCpf) {
+            return res.status(400).json({ erro: "CPF é obrigatório para realizar a compra." });
+        }
 
-        res.json({ init_point: respostaMp.init_point });
-    } catch(e) {
-        console.error("Erro detalhado do MP:", e);
-        res.status(500).json({ erro: "Erro ao criar preferência de pagamento: " + (e.message || JSON.stringify(e)) });
-    }
+        // Se informou o CPF agora e não tinha no banco, nós salvamos
+        if (cpf && !row?.cpf) {
+            db.run(`UPDATE usuarios SET cpf = ? WHERE id = ?`, [cpf, usuarioId]);
+        }
+
+        try {
+            let preference = new Preference(mpClient);
+            let hostUrl = 'https://' + req.get('host');
+
+            let respostaMp = await preference.create({
+                body: {
+                    items: [{
+                        title: pacote.titulo,
+                        quantity: 1,
+                        unit_price: Number(pacote.preco)
+                    }],
+                    payer: {
+                        identification: {
+                            type: "CPF",
+                            number: userCpf.replace(/\D/g, '') // Garante que vão só números para o Mercado Pago
+                        }
+                    },
+                    // AQUI EMBUTIMOS O PREÇO PARA REGISTRO INTERNO NO WEBHOOK SEM ALTERAR O FUNCIONAMENTO
+                    external_reference: `${usuarioId}_${pacote.quantidade}_${pacote.preco}`,
+                    back_urls: {
+                        success: `${hostUrl}/?pagamento=sucesso`,
+                        failure: `${hostUrl}/?pagamento=falha`,
+                        pending: `${hostUrl}/?pagamento=pendente`
+                    },
+                    notification_url: `${hostUrl}/api/webhook/pagamento`,
+                    auto_return: "approved"
+                }
+            });
+
+            res.json({ init_point: respostaMp.init_point });
+        } catch(e) {
+            console.error("Erro detalhado do MP:", e);
+            res.status(500).json({ erro: "Erro ao criar preferência de pagamento: " + (e.message || JSON.stringify(e)) });
+        }
+    });
 });
 
 // WEBHOOK DO MERCADO PAGO
@@ -249,7 +275,7 @@ app.post('/api/registrar', authLimiter, async (req, res) => {
         db.run(`INSERT INTO usuarios (email, senha, creditos, role) VALUES (?, ?, 30, 'user')`, [email, senhaHash], function(err) {
             if (err) return res.status(400).json({ erro: "E-mail já cadastrado." });
             let token = jwt.sign({ id: this.lastID }, SECRET_JWT, { expiresIn: '7d' });
-            res.json({ token, creditos: 30, role: 'user' });
+            res.json({ token, creditos: 30, role: 'user', temCpf: false });
         });
     } catch(e) {
         res.status(500).json({ erro: "Erro ao registrar usuário." });
@@ -266,7 +292,7 @@ app.post('/api/login', authLimiter, (req, res) => {
         if (!senhaValida) return res.status(400).json({ erro: "E-mail ou senha inválidos." });
         
         let token = jwt.sign({ id: usuario.id }, SECRET_JWT, { expiresIn: '7d' });
-        res.json({ token, creditos: usuario.creditos, role: usuario.role || 'user' });
+        res.json({ token, creditos: usuario.creditos, role: usuario.role || 'user', temCpf: !!usuario.cpf });
     });
 });
 
@@ -332,9 +358,9 @@ app.post('/api/alterar-senha', verificarToken, async (req, res) => {
 });
 
 app.get('/api/creditos', verificarToken, (req, res) => {
-    db.get(`SELECT creditos, role FROM usuarios WHERE id = ?`, [req.usuarioId], (err, row) => {
+    db.get(`SELECT creditos, role, cpf FROM usuarios WHERE id = ?`, [req.usuarioId], (err, row) => {
         if (err || !row) return res.status(500).json({ erro: "Erro ao buscar créditos." });
-        res.json({ creditos: row.creditos, role: row.role || 'user' });
+        res.json({ creditos: row.creditos, role: row.role || 'user', temCpf: !!row.cpf });
     });
 });
 
