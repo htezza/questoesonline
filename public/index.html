@@ -1013,7 +1013,7 @@ async function comprarCreditos(pacoteId) {
         // Se a compra foi iniciada e enviamos um cpf novo com sucesso, guardamos na sessão atual.
         if (cpf) usuarioTemCpf = true; 
 
-        window.open(data.init_point, '_blank');
+        window.location.href = data.init_point;
     } catch(e) {
         alert("Erro ao iniciar o pagamento.");
     }
