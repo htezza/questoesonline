@@ -714,6 +714,7 @@
 let perguntas=[];
 let corrigindo = false;
 const TOKEN_KEY = "token_jwt_questoes";
+let usuarioTemCpf = false; // VARIÁVEL DE CONTROLE GLOBAL
 
 window.addEventListener("DOMContentLoaded", () => {
     let token = localStorage.getItem(TOKEN_KEY);
@@ -805,6 +806,7 @@ async function fazerLogin() {
         
         document.getElementById("userEmailSpan").innerText = email;
         document.getElementById("creditosSpan").innerText = data.creditos; atualizarMensagemCreditos(data.creditos);
+        usuarioTemCpf = data.temCpf; // ATUALIZA INFORMAÇÃO GLOBAL
         
         if (data.role === 'admin') {
             document.getElementById("btnTabAdmin").classList.remove("hidden");
@@ -877,6 +879,7 @@ async function carregarDadosUsuario(token) {
         let emailDigitado = document.getElementById("loginEmail").value;
         document.getElementById("userEmailSpan").innerText = emailDigitado || "Usuário";
         document.getElementById("creditosSpan").innerText = data.creditos; atualizarMensagemCreditos(data.creditos);
+        usuarioTemCpf = data.temCpf; // ATUALIZA INFORMAÇÃO GLOBAL
         
         if (data.role === 'admin') {
             document.getElementById("btnTabAdmin").classList.remove("hidden");
@@ -988,15 +991,28 @@ async function executarAlterarSenhaUsuario() {
 
 async function comprarCreditos(pacoteId) {
     let token = localStorage.getItem(TOKEN_KEY);
+    let cpf = null;
+    
+    if (!usuarioTemCpf) {
+        cpf = prompt("Para prosseguir com a compra, por favor informe o seu CPF (apenas números):");
+        if (!cpf) {
+            alert("O CPF é obrigatório para realizar a compra.");
+            return;
+        }
+    }
+
     try {
         let res = await fetch('/api/criar-pagamento', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ pacoteId })
+            body: JSON.stringify({ pacoteId, cpf })
         });
         let data = await res.json();
         if(!res.ok) { alert(data.erro); return; }
         
+        // Se a compra foi iniciada e enviamos um cpf novo com sucesso, guardamos na sessão atual.
+        if (cpf) usuarioTemCpf = true; 
+
         window.open(data.init_point, '_blank');
     } catch(e) {
         alert("Erro ao iniciar o pagamento.");
