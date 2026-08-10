@@ -861,9 +861,14 @@ async function fazerRegistro() {
         let data = await res.json();
         if(!res.ok) { document.getElementById("authErro").innerText = data.erro; return; }
         
-        alert("Conta criada com sucesso! Faça login para continuar.");
-        document.getElementById("loginEmail").value = email;
-        mostrarTelaRegistro(false);
+        // Meta Pixel — cadastro concluído
+if (typeof fbq === 'function') {
+    fbq('track', 'CompleteRegistration');
+}
+
+alert("Conta criada com sucesso! Faça login para continuar.");
+document.getElementById("loginEmail").value = email;
+mostrarTelaRegistro(false);
     } catch(e) { 
         console.error("Erro detalhado:", e);
         document.getElementById("authErro").innerText = "Erro: " + e.message; 
