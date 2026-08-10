@@ -692,20 +692,38 @@ src="https://www.facebook.com/tr?id=1548997376693347&ev=PageView&noscript=1"/>
                 <h1>⚙️ Gestão de Plataforma</h1>
                 <p style="text-align:center;color:#64748b;">Acompanhe métricas de negócio e gerencie usuários.</p>
 
-                <!-- NOVO DASHBOARD EXECUTIVO -->
+                <!-- DASHBOARD EXECUTIVO -->
                 <h3 style="margin-top: 25px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">📈 Dashboard Executivo</h3>
-                <div class="stats-grid" id="adminStatsGerais" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px;">
-                    <!-- Preenchido via Javascript via API -->
+                <p style="font-size:13px;color:#64748b;margin:0 0 18px;">Visão do funil: cadastro → uso → compra → recorrência.</p>
+
+                <div id="adminStatsGerais" style="margin-bottom: 30px;">
                     <div class="stat-card"><h3>...</h3><p>Carregando...</p></div>
                 </div>
 
-                <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 25px;">
-                    <h3 style="margin-top: 0; font-size: 16px;">💰 Configurar Custo de Aquisição (CAC)</h3>
-                    <p style="font-size: 13px; color: #64748b;">Informe o valor total investido em marketing e vendas até o momento:</p>
-    
-                    <div style="display: flex; gap: 10px; max-width: 400px;">
-                        <input type="number" id="inputInvestimentoMarketing" placeholder="Ex: 1500.00" style="margin: 0;">
-                        <button onclick="salvarInvestimentoAdmin()" style="width: auto; margin: 0; background: #16a34a; padding: 0 20px;">Salvar</button>
+                <div style="background:#f8fafc;padding:18px;border-radius:14px;border:1px solid #e2e8f0;margin-bottom:18px;">
+                    <h3 style="margin:0 0 5px;font-size:16px;">👥 Aquisição e Uso</h3>
+                    <p style="font-size:12px;color:#64748b;margin:0 0 14px;">Mostra quantas pessoas chegaram à plataforma e realmente utilizaram o sistema.</p>
+                    <div class="stats-grid" id="adminStatsAquisicao" style="margin:0;"></div>
+                </div>
+
+                <div style="background:#f8fafc;padding:18px;border-radius:14px;border:1px solid #e2e8f0;margin-bottom:18px;">
+                    <h3 style="margin:0 0 5px;font-size:16px;">💳 Conversão e Receita</h3>
+                    <p style="font-size:12px;color:#64748b;margin:0 0 14px;">Mostra quem virou cliente e quanto a plataforma já faturou.</p>
+                    <div class="stats-grid" id="adminStatsReceita" style="margin:0;"></div>
+                </div>
+
+                <div style="background:#f8fafc;padding:18px;border-radius:14px;border:1px solid #e2e8f0;margin-bottom:25px;">
+                    <h3 style="margin:0 0 5px;font-size:16px;">📊 Economia do Negócio</h3>
+                    <p style="font-size:12px;color:#64748b;margin:0 0 14px;">Indicadores de marketing, IA e retorno financeiro. O resultado considera apenas os custos cadastrados no painel e o custo estimado da IA.</p>
+                    <div class="stats-grid" id="adminStatsEconomia" style="margin:0;"></div>
+                </div>
+
+                <div style="background:#f8fafc; padding:20px; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:25px;">
+                    <h3 style="margin-top:0; font-size:16px;">💰 Configurar Investimento em Marketing</h3>
+                    <p style="font-size:13px; color:#64748b;">Informe quanto você já investiu em marketing e vendas até o momento.</p>
+                    <div style="display:flex; gap:10px; max-width:400px;">
+                        <input type="number" id="inputInvestimentoMarketing" placeholder="Ex: 1500.00" style="margin:0;">
+                        <button onclick="salvarInvestimentoAdmin()" style="width:auto; margin:0; background:#16a34a; padding:0 20px;">Salvar</button>
                     </div>
                 </div>
 
@@ -1330,40 +1348,66 @@ async function limparHistoricoServidor() {
     }
 }
 
-// NOVA FUNÇÃO: CARREGAR ESTATÍSTICAS DE ADMIN
+// CARREGAR ESTATÍSTICAS DE ADMIN
 async function carregarEstatisticasAdmin() {
     let token = localStorage.getItem(TOKEN_KEY);
     try {
         let res = await fetch('/api/admin/estatisticas', { headers: { 'Authorization': `Bearer ${token}` } });
         let data = await res.json();
         if (!res.ok) {
-            document.getElementById('adminStatsGerais').innerHTML = `<div class="stat-card" style="grid-column: 1/-1;"><p style="color: #dc2626;">Erro ao carregar: ${data.erro || 'Acesso negado'}</p></div>`;
+            document.getElementById('adminStatsGerais').innerHTML = `<div class="stat-card"><p style="color:#dc2626;">Erro ao carregar: ${data.erro || 'Acesso negado'}</p></div>`;
             return;
         }
 
-        const formatMoney = (val) => Number(val).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
-        const formatNum = (val) => Number(val).toLocaleString('pt-BR');
+        const formatMoney = (val) => Number(val || 0).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+        const formatNum = (val) => Number(val || 0).toLocaleString('pt-BR');
+        const formatPct = (val) => `${Number(val || 0).toFixed(1)}%`;
+        const formatRatio = (val) => Number(val || 0).toFixed(2);
+
+        const card = (valor, titulo, cor='') => `
+            <div class="stat-card">
+                <h3${cor ? ` style="color:${cor}"` : ''}>${valor}</h3>
+                <p>${titulo}</p>
+            </div>`;
 
         document.getElementById('adminStatsGerais').innerHTML = `
-            <div class="stat-card"><h3>${formatNum(data.usuarios_cadastrados)}</h3><p>Usuários Cadastrados</p></div>
-            <div class="stat-card"><h3>${formatNum(data.usuarios_ativos)}</h3><p>Usuários Ativos</p></div>
-            <div class="stat-card"><h3>${formatNum(data.pdfs_enviados)}</h3><p>PDFs Enviados</p></div>
-            <div class="stat-card"><h3>${formatNum(data.questoes_gratuitas_geradas)}</h3><p>Questões Gratuitas</p></div>
-            <div class="stat-card"><h3>${formatNum(data.questoes_pagas_geradas)}</h3><p>Questões Pagas</p></div>
-            <div class="stat-card"><h3 style="color:#16a34a">${formatNum(data.creditos_vendidos)}</h3><p>Créditos Vendidos</p></div>
-            <div class="stat-card"><h3 style="color:#2563eb">${formatMoney(data.faturamento)}</h3><p>Faturamento</p></div>
-            <div class="stat-card"><h3>${formatMoney(data.ticket_medio)}</h3><p>Ticket Médio</p></div>
-            <div class="stat-card"><h3>${data.pct_compraram.toFixed(1)}%</h3><p>Conversão (Compraram)</p></div>
-            <div class="stat-card"><h3>${formatNum(data.compraram_novamente)}</h3><p>Compraram Novamente</p></div>
-            <div class="stat-card"><h3 style="color:#dc2626">${formatMoney(data.custo_ia)}</h3><p>Custo Estimado da IA</p></div>    
-            <div class="stat-card"><h3 style="color:#dc2626">${formatMoney(data.cac)}</h3><p>Custo Por Usuário</p></div>
-            <div class="stat-card"><h3 style="color:#059669">${formatMoney(data.ltv)}</h3><p>LTV</p></div>
-            <div class="stat-card"><h3 style="color:#059669">${formatMoney(data.lucro_liquido)}</h3><p>Lucro Líquido</p></div>
+            <div style="background:linear-gradient(135deg,#eff6ff,#f8fafc);border:1px solid #dbeafe;border-radius:14px;padding:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;">
+                ${card(formatNum(data.usuarios_cadastrados), 'Usuários Cadastrados', '#2563eb')}
+                ${card(formatNum(data.usuarios_que_usaram), 'Usuários que Usaram', '#2563eb')}
+                ${card(formatPct(data.ativacao), 'Taxa de Ativação', '#2563eb')}
+                ${card(formatNum(data.usuarios_ativos), 'Ativos — últimos 7 dias', '#16a34a')}
+            </div>`;
+
+        document.getElementById('adminStatsAquisicao').innerHTML = `
+            ${card(formatNum(data.geracoes_questoes), 'Gerações de Questões')}
+            ${card(formatNum(data.questoes_gratuitas_geradas), 'Questões Gratuitas')}
+            ${card(formatNum(data.questoes_pagas_geradas), 'Questões Pagas')}
+            ${card(formatNum(data.compradores), 'Compradores', '#16a34a')}
+        `;
+
+        document.getElementById('adminStatsReceita').innerHTML = `
+            ${card(formatMoney(data.faturamento), 'Faturamento', '#2563eb')}
+            ${card(formatMoney(data.ticket_medio), 'Ticket Médio')}
+            ${card(formatPct(data.pct_compraram), 'Conversão em Compra', '#16a34a')}
+            ${card(formatNum(data.compraram_novamente), 'Compraram Novamente', '#16a34a')}
+            ${card(formatPct(data.taxa_recompra), 'Taxa de Recompra', '#16a34a')}
+            ${card(formatNum(data.creditos_vendidos), 'Créditos Vendidos')}
+        `;
+
+        document.getElementById('adminStatsEconomia').innerHTML = `
+            ${card(formatMoney(data.investimento_marketing), 'Investimento em Marketing')}
+            ${card(formatMoney(data.custo_ia), 'Custo Estimado da IA', '#dc2626')}
+            ${card(formatMoney(data.custo_por_cadastro), 'Custo por Cadastro', '#dc2626')}
+            ${card(formatMoney(data.cac), 'CAC por Cliente', '#dc2626')}
+            ${card(formatMoney(data.ltv), 'LTV Médio', '#059669')}
+            ${card(formatRatio(data.ltv_cac), 'LTV / CAC', '#059669')}
+            ${card(formatMoney(data.resultado_estimado), 'Resultado após IA + Marketing', data.resultado_estimado >= 0 ? '#059669' : '#dc2626')}
         `;
     } catch(e) {
         console.error("Erro ao carregar estatísticas do admin:", e);
     }
 }
+
 
 async function carregarListaUsuariosAdmin() {
     let token = localStorage.getItem(TOKEN_KEY);
