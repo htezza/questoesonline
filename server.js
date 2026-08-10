@@ -190,11 +190,26 @@ db.serialize(() => {
     quantidade INTEGER,
     valor REAL,
     payment_id TEXT,
+    gclid TEXT,
+    gbraid TEXT,
+    wbraid TEXT,
     data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )`);
 
 // Adiciona a coluna payment_id caso o banco já exista
 db.run(`ALTER TABLE compras ADD COLUMN payment_id TEXT`, (err) => {
+    // Ignora o erro caso a coluna já exista
+});
+
+    db.run(`ALTER TABLE compras ADD COLUMN gclid TEXT`, (err) => {
+    // Ignora o erro caso a coluna já exista
+});
+
+db.run(`ALTER TABLE compras ADD COLUMN gbraid TEXT`, (err) => {
+    // Ignora o erro caso a coluna já exista
+});
+
+db.run(`ALTER TABLE compras ADD COLUMN wbraid TEXT`, (err) => {
     // Ignora o erro caso a coluna já exista
 });
 
@@ -267,7 +282,16 @@ async function fetchComRetry(url, opciones, maxTentativas = 5) {
 
 // ROTA DE PAGAMENTO (MERCADO PAGO)
 app.post('/api/criar-pagamento', verificarToken, async (req, res) => {
-    let { pacoteId, cpf, fbp, fbc } = req.body;
+    let {
+        pacoteId,
+        cpf,
+        fbp,
+        fbc,
+        gclid,
+        gbraid,
+        wbraid
+    } = req.body;
+
     let usuarioId = req.usuarioId;
 
     const pacotes = {
@@ -313,7 +337,7 @@ app.post('/api/criar-pagamento', verificarToken, async (req, res) => {
     }
 },
                     // AQUI EMBUTIMOS O PREÇO PARA REGISTRO INTERNO NO WEBHOOK SEM ALTERAR O FUNCIONAMENTO
-                    external_reference: `${usuarioId}_${pacote.quantidade}_${pacote.preco}_${encodeURIComponent(fbp || '')}_${encodeURIComponent(fbc || '')}`,
+                    external_reference: `${usuarioId}_${pacote.quantidade}_${pacote.preco}_${encodeURIComponent(fbp || '')}_${encodeURIComponent(fbc || '')}_${encodeURIComponent(gclid || '')}_${encodeURIComponent(gbraid || '')}_${encodeURIComponent(wbraid || '')}`,
                     back_urls: {
                         success: `${hostUrl}/?pagamento=sucesso`,
                         failure: `${hostUrl}/?pagamento=falha`,
@@ -363,6 +387,10 @@ let valorPago = Number(partes[2]) || 0;
 let fbp = partes[3] ? decodeURIComponent(partes[3]) : null;
 let fbc = partes[4] ? decodeURIComponent(partes[4]) : null;
 
+let gclid = partes[5] ? decodeURIComponent(partes[5]) : null;
+let gbraid = partes[6] ? decodeURIComponent(partes[6]) : null;
+let wbraid = partes[7] ? decodeURIComponent(partes[7]) : null;
+
                     // Usa uma transação para garantir que o pagamento
                     // e a liberação dos créditos aconteçam juntos.
                     db.run(`BEGIN IMMEDIATE TRANSACTION`, (err) => {
@@ -376,14 +404,17 @@ let fbc = partes[4] ? decodeURIComponent(partes[4]) : null;
                         // O índice UNIQUE impede que o mesmo payment_id
                         // seja processado novamente.
                         db.run(
-                            `INSERT INTO compras
-                            (usuario_id, quantidade, valor, payment_id)
-                            VALUES (?, ?, ?, ?)`,
+                            INSERT INTO compras
+(usuario_id, quantidade, valor, payment_id, gclid, gbraid, wbraid)
+VALUES (?, ?, ?, ?, ?, ?, ?)
                             [
-                                usuarioId,
-                                creditosComprados,
-                                valorPago,
-                                String(paymentId)
+                               usuarioId,
+    creditosComprados,
+    valorPago,
+    String(paymentId),
+    gclid,
+    gbraid,
+    wbraid
                             ],
                             function(err) {
 
