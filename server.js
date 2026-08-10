@@ -626,16 +626,17 @@ app.post('/api/admin/creditos', verificarToken, verificarAdmin, (req, res) => {
 });
 
 // === NOVO ENDPOINT DE ESTATÍSTICAS PARA O DASHBOARD ADMIN ===
-// === NOVO ENDPOINT DE ESTATÍSTICAS PARA O DASHBOARD ADMIN ===
+// === ESTATÍSTICAS DO DASHBOARD ADMIN ===
 app.get('/api/admin/estatisticas', verificarToken, verificarAdmin, async (req, res) => {
     try {
         const getQuery = (query, params = []) => new Promise((resolve, reject) => {
-            db.get(query, params, (err, row) => err ? reject(err) : resolve(row));
+            db.get(query, params, (err, row) => {
+                if (err) reject(err);
+                else resolve(row);
+            });
         });
 
-        // ==========================================================
-        // USUÁRIOS DE TESTE - NÃO ENTRAM EM NENHUMA MÉTRICA
-        // ==========================================================
+        // USUÁRIOS DE TESTE - NÃO ENTRAM NAS MÉTRICAS
         const usuariosTeste = [
             'hugo.tezza@gmail.com',
             'hugo.tezza1@gmail.com',
@@ -645,40 +646,59 @@ app.get('/api/admin/estatisticas', verificarToken, verificarAdmin, async (req, r
         const placeholders = usuariosTeste.map(() => '?').join(',');
 
         // ==========================================================
-        // USUÁRIOS CADASTRADOS
+        // 1. USUÁRIOS CADASTRADOS
         // ==========================================================
-        let usuarios_cadastrados = (await getQuery(`
-            SELECT COUNT(*) as c
+        const usuarios_cadastrados = (await getQuery(`
+            SELECT COUNT(*) AS c
             FROM usuarios
             WHERE LOWER(email) NOT IN (${placeholders})
         `, usuariosTeste)).c || 0;
 
         // ==========================================================
-        // USUÁRIOS ATIVOS
+        // 2. USUÁRIOS QUE JÁ UTILIZARAM O SISTEMA
+        // Pelo menos uma geração de questões
         // ==========================================================
-        let usuarios_ativos = (await getQuery(`
-            SELECT COUNT(DISTINCT g.usuario_id) as c
-            FROM geracoes g
-            INNER JOIN usuarios u ON u.id = g.usuario_id
-            WHERE g.data >= datetime('now', '-2 months')
-              AND LOWER(u.email) NOT IN (${placeholders})
-        `, usuariosTeste)).c || 0;
-
-        // ==========================================================
-        // GERAÇÕES / PDFs
-        // ==========================================================
-        let pdfs_enviados = (await getQuery(`
-            SELECT COUNT(*) as c
+        const usuarios_que_usaram = (await getQuery(`
+            SELECT COUNT(DISTINCT g.usuario_id) AS c
             FROM geracoes g
             INNER JOIN usuarios u ON u.id = g.usuario_id
             WHERE LOWER(u.email) NOT IN (${placeholders})
         `, usuariosTeste)).c || 0;
 
         // ==========================================================
-        // QUESTÕES GRATUITAS
+        // 3. USUÁRIOS ATIVOS NOS ÚLTIMOS 7 DIAS
         // ==========================================================
-        let q_gratis = (await getQuery(`
-            SELECT SUM(g.quantidade) as c
+        const usuarios_ativos = (await getQuery(`
+            SELECT COUNT(DISTINCT g.usuario_id) AS c
+            FROM geracoes g
+            INNER JOIN usuarios u ON u.id = g.usuario_id
+            WHERE g.data >= datetime('now', '-7 days')
+              AND LOWER(u.email) NOT IN (${placeholders})
+        `, usuariosTeste)).c || 0;
+
+        // ==========================================================
+        // 4. TAXA DE ATIVAÇÃO
+        // ==========================================================
+        const taxa_ativacao = usuarios_cadastrados > 0
+            ? (usuarios_que_usaram / usuarios_cadastrados) * 100
+            : 0;
+
+        // ==========================================================
+        // 5. GERAÇÕES DE QUESTÕES
+        // IMPORTANTE: não chamar isso de "PDFs enviados"
+        // ==========================================================
+        const geracoes = (await getQuery(`
+            SELECT COUNT(*) AS c
+            FROM geracoes g
+            INNER JOIN usuarios u ON u.id = g.usuario_id
+            WHERE LOWER(u.email) NOT IN (${placeholders})
+        `, usuariosTeste)).c || 0;
+
+        // ==========================================================
+        // 6. QUESTÕES GRATUITAS
+        // ==========================================================
+        const questoes_gratuitas = (await getQuery(`
+            SELECT COALESCE(SUM(g.quantidade), 0) AS c
             FROM geracoes g
             INNER JOIN usuarios u ON u.id = g.usuario_id
             WHERE g.is_pago = 0
@@ -686,10 +706,10 @@ app.get('/api/admin/estatisticas', verificarToken, verificarAdmin, async (req, r
         `, usuariosTeste)).c || 0;
 
         // ==========================================================
-        // QUESTÕES PAGAS
+        // 7. QUESTÕES PAGAS
         // ==========================================================
-        let q_pagas = (await getQuery(`
-            SELECT SUM(g.quantidade) as c
+        const questoes_pagas = (await getQuery(`
+            SELECT COALESCE(SUM(g.quantidade), 0) AS c
             FROM geracoes g
             INNER JOIN usuarios u ON u.id = g.usuario_id
             WHERE g.is_pago = 1
@@ -697,67 +717,41 @@ app.get('/api/admin/estatisticas', verificarToken, verificarAdmin, async (req, r
         `, usuariosTeste)).c || 0;
 
         // ==========================================================
-        // COMPRAS
+        // 8. COMPRAS
         // ==========================================================
-        let comprasStats = await getQuery(`
+        const comprasStats = await getQuery(`
             SELECT
-                SUM(c.quantidade) as total_creditos,
-                SUM(c.valor) as faturamento,
-                COUNT(DISTINCT c.usuario_id) as compradores
+                COALESCE(SUM(c.quantidade), 0) AS total_creditos,
+                COALESCE(SUM(c.valor), 0) AS faturamento,
+                COUNT(DISTINCT c.usuario_id) AS compradores
             FROM compras c
             INNER JOIN usuarios u ON u.id = c.usuario_id
             WHERE LOWER(u.email) NOT IN (${placeholders})
         `, usuariosTeste);
 
-        let faturamento = comprasStats.faturamento || 0;
-        let creditos_vendidos = comprasStats.total_creditos || 0;
-        let compradores = comprasStats.compradores || 0;
+        const creditos_vendidos = Number(comprasStats.total_creditos) || 0;
+        const faturamento = Number(comprasStats.faturamento) || 0;
+        const compradores = Number(comprasStats.compradores) || 0;
 
         // ==========================================================
-        // INVESTIMENTO EM MARKETING
+        // 9. TICKET MÉDIO
         // ==========================================================
-        let invRow = await getQuery(`
-            SELECT valor
-            FROM configuracoes
-            WHERE chave = 'investimento_marketing'
-        `);
-
-        let investimentoMarketing = invRow ? Number(invRow.valor) : 0;
-
-        // ==========================================================
-        // CUSTO DA IA
-        // ==========================================================
-        let total_questoes = q_gratis + q_pagas;
-        let custo_ia = total_questoes * 0.001;
-
-        let investimentoTotal = Number(investimentoMarketing) || 0;
-
-        // ==========================================================
-        // CAC
-        // ==========================================================
-        let cac = usuarios_cadastrados > 0
-            ? ((investimentoTotal + custo_ia) / usuarios_cadastrados)
+        const ticket_medio = compradores > 0
+            ? faturamento / compradores
             : 0;
 
         // ==========================================================
-        // TICKET MÉDIO
+        // 10. CONVERSÃO EM COMPRA
         // ==========================================================
-        let ticket_medio = compradores > 0
-            ? (faturamento / compradores)
+        const pct_compraram = usuarios_cadastrados > 0
+            ? (compradores / usuarios_cadastrados) * 100
             : 0;
 
         // ==========================================================
-        // PERCENTUAL QUE COMPRARAM
+        // 11. COMPRARAM NOVAMENTE
         // ==========================================================
-        let pct_compraram = usuarios_cadastrados > 0
-            ? ((compradores / usuarios_cadastrados) * 100)
-            : 0;
-
-        // ==========================================================
-        // COMPRARAM NOVAMENTE
-        // ==========================================================
-        let rebuyStats = await getQuery(`
-            SELECT COUNT(*) as c
+        const rebuyStats = await getQuery(`
+            SELECT COUNT(*) AS c
             FROM (
                 SELECT c.usuario_id
                 FROM compras c
@@ -768,22 +762,59 @@ app.get('/api/admin/estatisticas', verificarToken, verificarAdmin, async (req, r
             )
         `, usuariosTeste);
 
-        let compraram_novamente = rebuyStats.c || 0;
+        const compraram_novamente = Number(rebuyStats.c) || 0;
 
         // ==========================================================
-        // LUCRO LÍQUIDO
+        // 12. TAXA DE RECOMPRA
         // ==========================================================
-        let lucro_liquido = faturamento - custo_ia - investimentoTotal;
+        const taxa_recompra = compradores > 0
+            ? (compraram_novamente / compradores) * 100
+            : 0;
 
         // ==========================================================
-        // LTV
+        // 13. INVESTIMENTO EM MARKETING
         // ==========================================================
-        let ltvQuery = await getQuery(`
-            SELECT AVG(total_gasto) as ltv_medio
+        const invRow = await getQuery(`
+            SELECT valor
+            FROM configuracoes
+            WHERE chave = 'investimento_marketing'
+        `);
+
+        const investimento_marketing = invRow
+            ? Number(invRow.valor) || 0
+            : 0;
+
+        // ==========================================================
+        // 14. CUSTO ESTIMADO DA IA
+        // ==========================================================
+        const total_questoes = questoes_gratuitas + questoes_pagas;
+        const custo_ia = total_questoes * 0.001;
+
+        // ==========================================================
+        // 15. CAC
+        // Custo para adquirir um CLIENTE PAGANTE
+        // ==========================================================
+        const cac = compradores > 0
+            ? (investimento_marketing / compradores)
+            : 0;
+
+        // ==========================================================
+        // 16. CUSTO POR CADASTRO
+        // ==========================================================
+        const custo_por_cadastro = usuarios_cadastrados > 0
+            ? (investimento_marketing / usuarios_cadastrados)
+            : 0;
+
+        // ==========================================================
+        // 17. LTV
+        // Média do total gasto por comprador
+        // ==========================================================
+        const ltvQuery = await getQuery(`
+            SELECT AVG(total_gasto) AS ltv_medio
             FROM (
                 SELECT
                     c.usuario_id,
-                    SUM(c.valor) as total_gasto
+                    SUM(c.valor) AS total_gasto
                 FROM compras c
                 INNER JOIN usuarios u ON u.id = c.usuario_id
                 WHERE LOWER(u.email) NOT IN (${placeholders})
@@ -791,31 +822,59 @@ app.get('/api/admin/estatisticas', verificarToken, verificarAdmin, async (req, r
             )
         `, usuariosTeste);
 
-        let ltv = ltvQuery && ltvQuery.ltv_medio
-            ? ltvQuery.ltv_medio
+        const ltv = ltvQuery && ltvQuery.ltv_medio
+            ? Number(ltvQuery.ltv_medio)
             : 0;
+
+        // ==========================================================
+        // 18. LTV / CAC
+        // ==========================================================
+        const ltv_cac = cac > 0
+            ? ltv / cac
+            : 0;
+
+        // ==========================================================
+        // 19. RESULTADO
+        // ==========================================================
+        const lucro_liquido =
+            faturamento -
+            custo_ia -
+            investimento_marketing;
 
         // ==========================================================
         // RESPOSTA
         // ==========================================================
         res.json({
             usuarios_cadastrados,
+            usuarios_que_usaram,
             usuarios_ativos,
-            pdfs_enviados,
-            questoes_gratuitas_geradas: q_gratis,
-            questoes_pagas_geradas: q_pagas,
+            taxa_ativacao,
+
+            geracoes,
+            questoes_gratuitas,
+            questoes_pagas,
+
+            compradores,
             creditos_vendidos,
             faturamento,
             ticket_medio,
             pct_compraram,
+
             compraram_novamente,
+            taxa_recompra,
+
+            investimento_marketing,
             custo_ia,
+            custo_por_cadastro,
             cac,
             ltv,
+            ltv_cac,
             lucro_liquido
         });
 
     } catch (error) {
+        console.error("Erro nas estatísticas administrativas:", error);
+
         res.status(500).json({
             erro: "Erro interno de métricas: " + error.message
         });
