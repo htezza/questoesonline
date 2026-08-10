@@ -626,50 +626,178 @@ app.post('/api/admin/creditos', verificarToken, verificarAdmin, (req, res) => {
 });
 
 // === NOVO ENDPOINT DE ESTATÍSTICAS PARA O DASHBOARD ADMIN ===
+// === NOVO ENDPOINT DE ESTATÍSTICAS PARA O DASHBOARD ADMIN ===
 app.get('/api/admin/estatisticas', verificarToken, verificarAdmin, async (req, res) => {
     try {
         const getQuery = (query, params = []) => new Promise((resolve, reject) => {
             db.get(query, params, (err, row) => err ? reject(err) : resolve(row));
         });
-        
-        let usuarios_cadastrados = (await getQuery(`SELECT COUNT(*) as c FROM usuarios`)).c || 0;
-        let usuarios_ativos = (await getQuery(`SELECT COUNT(DISTINCT usuario_id) as c FROM geracoes WHERE data >= datetime('now', '-2 months')`)).c || 0;
-        let pdfs_enviados = (await getQuery(`SELECT COUNT(*) as c FROM geracoes`)).c || 0;
-        
-        let q_gratis = (await getQuery(`SELECT SUM(quantidade) as c FROM geracoes WHERE is_pago = 0`)).c || 0;
-        let q_pagas = (await getQuery(`SELECT SUM(quantidade) as c FROM geracoes WHERE is_pago = 1`)).c || 0;
-        
-        let comprasStats = await getQuery(`SELECT SUM(quantidade) as total_creditos, SUM(valor) as faturamento, COUNT(DISTINCT usuario_id) as compradores FROM compras`);
+
+        // ==========================================================
+        // USUÁRIOS DE TESTE - NÃO ENTRAM EM NENHUMA MÉTRICA
+        // ==========================================================
+        const usuariosTeste = [
+            'hugo.tezza@gmail.com',
+            'hugo.tezza1@gmail.com',
+            'isabela.cf.decarvalho@gmail.com'
+        ];
+
+        const placeholders = usuariosTeste.map(() => '?').join(',');
+
+        // ==========================================================
+        // USUÁRIOS CADASTRADOS
+        // ==========================================================
+        let usuarios_cadastrados = (await getQuery(`
+            SELECT COUNT(*) as c
+            FROM usuarios
+            WHERE LOWER(email) NOT IN (${placeholders})
+        `, usuariosTeste)).c || 0;
+
+        // ==========================================================
+        // USUÁRIOS ATIVOS
+        // ==========================================================
+        let usuarios_ativos = (await getQuery(`
+            SELECT COUNT(DISTINCT g.usuario_id) as c
+            FROM geracoes g
+            INNER JOIN usuarios u ON u.id = g.usuario_id
+            WHERE g.data >= datetime('now', '-2 months')
+              AND LOWER(u.email) NOT IN (${placeholders})
+        `, usuariosTeste)).c || 0;
+
+        // ==========================================================
+        // GERAÇÕES / PDFs
+        // ==========================================================
+        let pdfs_enviados = (await getQuery(`
+            SELECT COUNT(*) as c
+            FROM geracoes g
+            INNER JOIN usuarios u ON u.id = g.usuario_id
+            WHERE LOWER(u.email) NOT IN (${placeholders})
+        `, usuariosTeste)).c || 0;
+
+        // ==========================================================
+        // QUESTÕES GRATUITAS
+        // ==========================================================
+        let q_gratis = (await getQuery(`
+            SELECT SUM(g.quantidade) as c
+            FROM geracoes g
+            INNER JOIN usuarios u ON u.id = g.usuario_id
+            WHERE g.is_pago = 0
+              AND LOWER(u.email) NOT IN (${placeholders})
+        `, usuariosTeste)).c || 0;
+
+        // ==========================================================
+        // QUESTÕES PAGAS
+        // ==========================================================
+        let q_pagas = (await getQuery(`
+            SELECT SUM(g.quantidade) as c
+            FROM geracoes g
+            INNER JOIN usuarios u ON u.id = g.usuario_id
+            WHERE g.is_pago = 1
+              AND LOWER(u.email) NOT IN (${placeholders})
+        `, usuariosTeste)).c || 0;
+
+        // ==========================================================
+        // COMPRAS
+        // ==========================================================
+        let comprasStats = await getQuery(`
+            SELECT
+                SUM(c.quantidade) as total_creditos,
+                SUM(c.valor) as faturamento,
+                COUNT(DISTINCT c.usuario_id) as compradores
+            FROM compras c
+            INNER JOIN usuarios u ON u.id = c.usuario_id
+            WHERE LOWER(u.email) NOT IN (${placeholders})
+        `, usuariosTeste);
+
         let faturamento = comprasStats.faturamento || 0;
         let creditos_vendidos = comprasStats.total_creditos || 0;
         let compradores = comprasStats.compradores || 0;
 
-        // Buscar investimento e calcular CAC corretamente
-        let invRow = await getQuery(`SELECT valor FROM configuracoes WHERE chave = 'investimento_marketing'`);
+        // ==========================================================
+        // INVESTIMENTO EM MARKETING
+        // ==========================================================
+        let invRow = await getQuery(`
+            SELECT valor
+            FROM configuracoes
+            WHERE chave = 'investimento_marketing'
+        `);
+
         let investimentoMarketing = invRow ? Number(invRow.valor) : 0;
+
+        // ==========================================================
+        // CUSTO DA IA
+        // ==========================================================
         let total_questoes = q_gratis + q_pagas;
-        let custo_ia = total_questoes * 0.001; 
+        let custo_ia = total_questoes * 0.001;
+
         let investimentoTotal = Number(investimentoMarketing) || 0;
-        let cac = usuarios_cadastrados > 0 ? ((investimentoTotal + custo_ia) / usuarios_cadastrados) : 0;
 
-        let ticket_medio = compradores > 0 ? (faturamento / compradores) : 0;
-        let pct_compraram = usuarios_cadastrados > 0 ? ((compradores / usuarios_cadastrados) * 100) : 0;
+        // ==========================================================
+        // CAC
+        // ==========================================================
+        let cac = usuarios_cadastrados > 0
+            ? ((investimentoTotal + custo_ia) / usuarios_cadastrados)
+            : 0;
 
-        let rebuyStats = await getQuery(`SELECT COUNT(*) as c FROM (SELECT usuario_id FROM compras GROUP BY usuario_id HAVING COUNT(*) > 1)`);
+        // ==========================================================
+        // TICKET MÉDIO
+        // ==========================================================
+        let ticket_medio = compradores > 0
+            ? (faturamento / compradores)
+            : 0;
+
+        // ==========================================================
+        // PERCENTUAL QUE COMPRARAM
+        // ==========================================================
+        let pct_compraram = usuarios_cadastrados > 0
+            ? ((compradores / usuarios_cadastrados) * 100)
+            : 0;
+
+        // ==========================================================
+        // COMPRARAM NOVAMENTE
+        // ==========================================================
+        let rebuyStats = await getQuery(`
+            SELECT COUNT(*) as c
+            FROM (
+                SELECT c.usuario_id
+                FROM compras c
+                INNER JOIN usuarios u ON u.id = c.usuario_id
+                WHERE LOWER(u.email) NOT IN (${placeholders})
+                GROUP BY c.usuario_id
+                HAVING COUNT(*) > 1
+            )
+        `, usuariosTeste);
+
         let compraram_novamente = rebuyStats.c || 0;
 
-       
-        
+        // ==========================================================
+        // LUCRO LÍQUIDO
+        // ==========================================================
         let lucro_liquido = faturamento - custo_ia - investimentoTotal;
-        let ltvQuery = await getQuery(`
-            SELECT AVG(total_gasto) as ltv_medio FROM (
-                SELECT SUM(valor) as total_gasto 
-                FROM compras 
-                GROUP BY usuario_id
-            )
-        `);
-        let ltv = ltvQuery && ltvQuery.ltv_medio ? ltvQuery.ltv_medio : 0;
 
+        // ==========================================================
+        // LTV
+        // ==========================================================
+        let ltvQuery = await getQuery(`
+            SELECT AVG(total_gasto) as ltv_medio
+            FROM (
+                SELECT
+                    c.usuario_id,
+                    SUM(c.valor) as total_gasto
+                FROM compras c
+                INNER JOIN usuarios u ON u.id = c.usuario_id
+                WHERE LOWER(u.email) NOT IN (${placeholders})
+                GROUP BY c.usuario_id
+            )
+        `, usuariosTeste);
+
+        let ltv = ltvQuery && ltvQuery.ltv_medio
+            ? ltvQuery.ltv_medio
+            : 0;
+
+        // ==========================================================
+        // RESPOSTA
+        // ==========================================================
         res.json({
             usuarios_cadastrados,
             usuarios_ativos,
@@ -686,8 +814,11 @@ app.get('/api/admin/estatisticas', verificarToken, verificarAdmin, async (req, r
             ltv,
             lucro_liquido
         });
+
     } catch (error) {
-        res.status(500).json({ erro: "Erro interno de métricas: " + error.message });
+        res.status(500).json({
+            erro: "Erro interno de métricas: " + error.message
+        });
     }
 });
 
