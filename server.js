@@ -404,19 +404,19 @@ let wbraid = partes[7] ? decodeURIComponent(partes[7]) : null;
                         // O índice UNIQUE impede que o mesmo payment_id
                         // seja processado novamente.
                         db.run(
-                            INSERT INTO compras
-(usuario_id, quantidade, valor, payment_id, gclid, gbraid, wbraid)
-VALUES (?, ?, ?, ?, ?, ?, ?)
-                            [
-                               usuarioId,
-    creditosComprados,
-    valorPago,
-    String(paymentId),
-    gclid,
-    gbraid,
-    wbraid
-                            ],
-                            function(err) {
+    `INSERT INTO compras
+    (usuario_id, quantidade, valor, payment_id, gclid, gbraid, wbraid)
+    VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [
+        usuarioId,
+        creditosComprados,
+        valorPago,
+        String(paymentId),
+        gclid,
+        gbraid,
+        wbraid
+    ],
+    function(err) {
 
                                 if (err) {
 
