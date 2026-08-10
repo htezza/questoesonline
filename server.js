@@ -179,9 +179,15 @@ async function enviarConversaoGoogleAds({
 
     try {
         const client = await googleAuth.getClient();
-        console.log('Google Ads: autenticação obtida.');
-        const accessToken = await client.getAccessToken();
-        console.log('Google Ads: token obtido.');
+console.log('Google Ads: autenticação obtida.');
+
+const tokenResponse = await client.getAccessToken();
+const accessToken = tokenResponse?.token || tokenResponse;
+
+console.log(
+    'Google Ads: token obtido:',
+    accessToken ? 'SIM' : 'NÃO'
+);
 
         const adIdentifiers = {};
 
