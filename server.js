@@ -163,6 +163,12 @@ async function enviarConversaoGoogleAds({
     wbraid,
     eventTimestamp
 }) {
+    console.log('===== GOOGLE ADS - INÍCIO =====');
+    console.log('Payment ID:', paymentId);
+    console.log('GCLID:', gclid);
+    console.log('GBRAID:', gbraid);
+    console.log('WBRAID:', wbraid);
+
     if (!gclid && !gbraid && !wbraid) {
         console.log(
             `Compra ${paymentId} sem GCLID/GBRAID/WBRAID. ` +
@@ -173,7 +179,9 @@ async function enviarConversaoGoogleAds({
 
     try {
         const client = await googleAuth.getClient();
+        console.log('Google Ads: autenticação obtida.');
         const accessToken = await client.getAccessToken();
+        console.log('Google Ads: token obtido.');
 
         const adIdentifiers = {};
 
@@ -623,6 +631,15 @@ let wbraid = partes[7] ? decodeURIComponent(partes[7]) : null;
     valor: valorPago,
     fbp: fbp,
     fbc: fbc
+});
+
+                await enviarConversaoGoogleAds({
+    paymentId: paymentId,
+    valor: valorPago,
+    gclid: gclid,
+    gbraid: gbraid,
+    wbraid: wbraid,
+    eventTimestamp: pagData.date_approved
 });
 
             }
