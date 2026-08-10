@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const path = require('path');
 const crypto = require('crypto');
 const { MercadoPagoConfig, Preference } = require('mercadopago');
+const { GoogleAuth } = require('google-auth-library');
 const rateLimit = require('express-rate-limit');
 
 const app = express();
@@ -139,7 +140,117 @@ async function enviarPurchaseMeta({ paymentId, email, valor, fbp, fbc }) {
         );
     }
 }
+// ===============================
+// GOOGLE ADS - DATA MANAGER API
+// ===============================
 
+const GOOGLE_SERVICE_ACCOUNT_FILE =
+    '/etc/secrets/google-service-account.json';
+
+const GOOGLE_ADS_CUSTOMER_ID = '3452253646';
+const GOOGLE_ADS_CONVERSION_ACTION_ID = '7715948072';
+
+const googleAuth = new GoogleAuth({
+    keyFile: GOOGLE_SERVICE_ACCOUNT_FILE,
+    scopes: ['https://www.googleapis.com/auth/datamanager']
+});
+
+async function enviarConversaoGoogleAds({
+    paymentId,
+    valor,
+    gclid,
+    gbraid,
+    wbraid,
+    eventTimestamp
+}) {
+    if (!gclid && !gbraid && !wbraid) {
+        console.log(
+            `Compra ${paymentId} sem GCLID/GBRAID/WBRAID. ` +
+            `Conversão não enviada ao Google Ads.`
+        );
+        return;
+    }
+
+    try {
+        const client = await googleAuth.getClient();
+        const accessToken = await client.getAccessToken();
+
+        const adIdentifiers = {};
+
+        if (gclid) adIdentifiers.gclid = gclid;
+        if (gbraid) adIdentifiers.gbraid = gbraid;
+        if (wbraid) adIdentifiers.wbraid = wbraid;
+
+        const corpo = {
+            destinations: [
+                {
+                    reference: 'compra_google_ads',
+                    operatingAccount: {
+                        accountType: 'GOOGLE_ADS',
+                        accountId: GOOGLE_ADS_CUSTOMER_ID
+                    },
+                    productDestinationId:
+                        GOOGLE_ADS_CONVERSION_ACTION_ID
+                }
+            ],
+
+            events: [
+                {
+                    destinationReferences: [
+                        'compra_google_ads'
+                    ],
+
+                    transactionId: String(paymentId),
+
+                    eventTimestamp:
+                        eventTimestamp || new Date().toISOString(),
+
+                    adIdentifiers,
+
+                    currency: 'BRL',
+
+                    conversionValue: Number(valor) || 0,
+
+                    eventSource: 'WEB'
+                }
+            ]
+        };
+
+        const respostaGoogle = await fetch(
+            'https://datamanager.googleapis.com/v1/events:ingest',
+            {
+                method: 'POST',
+
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                },
+
+                body: JSON.stringify(corpo)
+            }
+        );
+
+        const resultadoGoogle = await respostaGoogle.json();
+
+        if (!respostaGoogle.ok) {
+            console.error(
+                'Erro ao enviar conversão para o Google Ads:',
+                resultadoGoogle
+            );
+            return;
+        }
+
+        console.log(
+            `Compra enviada ao Google Ads. Payment ID: ${paymentId}`
+        );
+
+    } catch (erro) {
+        console.error(
+            'Erro na Data Manager API do Google Ads:',
+            erro.message || erro
+        );
+    }
+}
 app.use(express.json({ limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
