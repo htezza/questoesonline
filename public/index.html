@@ -1374,14 +1374,14 @@ async function carregarEstatisticasAdmin() {
             <div style="background:linear-gradient(135deg,#eff6ff,#f8fafc);border:1px solid #dbeafe;border-radius:14px;padding:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;">
                 ${card(formatNum(data.usuarios_cadastrados), 'Usuários Cadastrados', '#2563eb')}
                 ${card(formatNum(data.usuarios_que_usaram), 'Usuários que Usaram', '#2563eb')}
-                ${card(formatPct(data.ativacao), 'Taxa de Ativação', '#2563eb')}
+                ${card(formatPct(data.taxa_ativacao), 'Taxa de Ativação', '#2563eb')}
                 ${card(formatNum(data.usuarios_ativos), 'Ativos — últimos 7 dias', '#16a34a')}
             </div>`;
 
         document.getElementById('adminStatsAquisicao').innerHTML = `
-            ${card(formatNum(data.geracoes_questoes), 'Gerações de Questões')}
-            ${card(formatNum(data.questoes_gratuitas_geradas), 'Questões Gratuitas')}
-            ${card(formatNum(data.questoes_pagas_geradas), 'Questões Pagas')}
+            ${card(formatNum(data.geracoes), 'Gerações de Questões')}
+            ${card(formatNum(data.questoes_gratuitas), 'Questões Gratuitas')}
+            ${card(formatNum(data.questoes_pagas), 'Questões Pagas')}
             ${card(formatNum(data.compradores), 'Compradores', '#16a34a')}
         `;
 
@@ -1401,7 +1401,7 @@ async function carregarEstatisticasAdmin() {
             ${card(formatMoney(data.cac), 'CAC por Cliente', '#dc2626')}
             ${card(formatMoney(data.ltv), 'LTV Médio', '#059669')}
             ${card(formatRatio(data.ltv_cac), 'LTV / CAC', '#059669')}
-            ${card(formatMoney(data.resultado_estimado), 'Resultado após IA + Marketing', data.resultado_estimado >= 0 ? '#059669' : '#dc2626')}
+            ${card(formatMoney(data.lucro_liquido), 'Resultado após IA + Marketing', data.lucro_liquido >= 0 ? '#059669' : '#dc2626')}
         `;
     } catch(e) {
         console.error("Erro ao carregar estatísticas do admin:", e);
