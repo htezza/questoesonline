@@ -58,7 +58,7 @@ const mpClient = new MercadoPagoConfig({
 // ===============================
 // META CONVERSIONS API - PURCHASE
 // ===============================
-async function enviarPurchaseMeta({ paymentId, email, valor }) {
+async function enviarPurchaseMeta({ paymentId, email, valor, fbp, fbc }) {
     if (!META_CAPI_ACCESS_TOKEN) {
         console.error("META_CAPI_ACCESS_TOKEN não está configurado.");
         return;
@@ -77,6 +77,15 @@ async function enviarPurchaseMeta({ paymentId, email, valor }) {
 
         if (emailHash) {
             userData.em = [emailHash];
+        }
+
+        // Identificadores de atribuição da Meta
+        if (fbp) {
+            userData.fbp = fbp;
+        }
+
+        if (fbc) {
+            userData.fbc = fbc;
         }
 
         const evento = {
@@ -258,7 +267,7 @@ async function fetchComRetry(url, opciones, maxTentativas = 5) {
 
 // ROTA DE PAGAMENTO (MERCADO PAGO)
 app.post('/api/criar-pagamento', verificarToken, async (req, res) => {
-    let { pacoteId, cpf } = req.body;
+    let { pacoteId, cpf, fbp, fbc } = req.body;
     let usuarioId = req.usuarioId;
 
     const pacotes = {
@@ -304,7 +313,7 @@ app.post('/api/criar-pagamento', verificarToken, async (req, res) => {
     }
 },
                     // AQUI EMBUTIMOS O PREÇO PARA REGISTRO INTERNO NO WEBHOOK SEM ALTERAR O FUNCIONAMENTO
-                    external_reference: `${usuarioId}_${pacote.quantidade}_${pacote.preco}`,
+                    external_reference: `${usuarioId}_${pacote.quantidade}_${pacote.preco}_${encodeURIComponent(fbp || '')}_${encodeURIComponent(fbc || '')}`,
                     back_urls: {
                         success: `${hostUrl}/?pagamento=sucesso`,
                         failure: `${hostUrl}/?pagamento=falha`,
@@ -347,9 +356,12 @@ app.post('/api/webhook/pagamento', async (req, res) => {
 
                     let partes = pagData.external_reference.split('_');
 
-                    let usuarioId = partes[0];
-                    let creditosComprados = Number(partes[1]);
-                    let valorPago = Number(partes[2]) || 0;
+let usuarioId = partes[0];
+let creditosComprados = Number(partes[1]);
+let valorPago = Number(partes[2]) || 0;
+
+let fbp = partes[3] ? decodeURIComponent(partes[3]) : null;
+let fbc = partes[4] ? decodeURIComponent(partes[4]) : null;
 
                     // Usa uma transação para garantir que o pagamento
                     // e a liberação dos créditos aconteçam juntos.
@@ -458,10 +470,12 @@ app.post('/api/webhook/pagamento', async (req, res) => {
                 }
 
                 await enviarPurchaseMeta({
-                    paymentId: paymentId,
-                    email: usuario?.email,
-                    valor: valorPago
-                });
+    paymentId: paymentId,
+    email: usuario?.email,
+    valor: valorPago,
+    fbp: fbp,
+    fbc: fbc
+});
 
             }
         );
