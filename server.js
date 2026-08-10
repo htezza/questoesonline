@@ -511,6 +511,52 @@ let fbc = partes[4] ? decodeURIComponent(partes[4]) : null;
     }
 });
 
+// ============================================================
+// VERIFICAR COMPRA PARA GOOGLE ADS
+// ============================================================
+app.get('/api/verificar-compra/:paymentId', verificarToken, (req, res) => {
+    const paymentId = String(req.params.paymentId || '').trim();
+
+    if (!paymentId) {
+        return res.status(400).json({
+            confirmada: false
+        });
+    }
+
+    db.get(
+        `SELECT payment_id, valor
+         FROM compras
+         WHERE payment_id = ?
+           AND usuario_id = ?`,
+        [paymentId, req.usuarioId],
+        (err, compra) => {
+
+            if (err) {
+                console.error(
+                    "Erro ao verificar compra para Google Ads:",
+                    err
+                );
+
+                return res.status(500).json({
+                    confirmada: false
+                });
+            }
+
+            if (!compra) {
+                return res.json({
+                    confirmada: false
+                });
+            }
+
+            return res.json({
+                confirmada: true,
+                paymentId: String(compra.payment_id),
+                valor: Number(compra.valor) || 0
+            });
+        }
+    );
+});
+
 app.post('/api/registrar', authLimiter, async (req, res) => {
     let { email, senha, confirmarSenha } = req.body;
     if (!email || !senha || !confirmarSenha) return res.status(400).json({ erro: "Preencha todos os campos." });
