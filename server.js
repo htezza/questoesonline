@@ -3,6 +3,7 @@ const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const path = require('path');
+const crypto = require('crypto');
 const { MercadoPagoConfig, Preference } = require('mercadopago');
 const rateLimit = require('express-rate-limit');
 
@@ -43,6 +44,9 @@ const MODELO_GEMINI = "gemini-3.1-flash-lite";
 // CONFIGURAÇÃO DO MERCADO PAGO (Cole seu Access Token do MP abaixo)
 const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN;
 
+const META_CAPI_ACCESS_TOKEN = process.env.META_CAPI_ACCESS_TOKEN;
+const META_PIXEL_ID = '1548997376693347';
+
 if (!MP_ACCESS_TOKEN) {
     console.error("ERRO CRÍTICO: A variável de ambiente MP_ACCESS_TOKEN não está definida.");
     process.exit(1);
@@ -51,7 +55,81 @@ if (!MP_ACCESS_TOKEN) {
 const mpClient = new MercadoPagoConfig({
     accessToken: MP_ACCESS_TOKEN
 });
+// ===============================
+// META CONVERSIONS API - PURCHASE
+// ===============================
+async function enviarPurchaseMeta({ paymentId, email, valor }) {
+    if (!META_CAPI_ACCESS_TOKEN) {
+        console.error("META_CAPI_ACCESS_TOKEN não está configurado.");
+        return;
+    }
 
+    try {
+        const emailNormalizado = String(email || '').trim().toLowerCase();
+
+        const emailHash = emailNormalizado
+            ? crypto.createHash('sha256')
+                .update(emailNormalizado)
+                .digest('hex')
+            : null;
+
+        const userData = {};
+
+        if (emailHash) {
+            userData.em = [emailHash];
+        }
+
+        const evento = {
+            event_name: "Purchase",
+            event_time: Math.floor(Date.now() / 1000),
+            event_id: `mp_${paymentId}`,
+            event_source_url: "https://questoesonline.onrender.com/",
+            action_source: "website",
+            user_data: userData,
+            custom_data: {
+                currency: "BRL",
+                value: Number(valor),
+                order_id: String(paymentId)
+            }
+        };
+
+        const respostaMeta = await fetch(
+            `https://graph.facebook.com/v23.0/${META_PIXEL_ID}/events`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    data: [evento],
+                    access_token: META_CAPI_ACCESS_TOKEN
+                })
+            }
+        );
+
+        const resultadoMeta = await respostaMeta.json();
+
+        if (!respostaMeta.ok) {
+            console.error(
+                "Erro ao enviar Purchase para a Meta:",
+                resultadoMeta
+            );
+            return;
+        }
+
+        console.log(
+            `Purchase enviado para a Meta. Payment ID: ${paymentId}`,
+            resultadoMeta
+        );
+
+    } catch (erro) {
+        // O erro da Meta não pode desfazer uma compra já aprovada.
+        console.error(
+            "Erro na Conversions API da Meta:",
+            erro.message || erro
+        );
+    }
+}
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -344,24 +422,59 @@ app.post('/api/webhook/pagamento', async (req, res) => {
                                         }
 
                                         // Finaliza a transação
-                                        db.run(`COMMIT`, (err) => {
+                                        db.run(`COMMIT`, async (err) => {
 
-                                            if (err) {
+    if (err) {
 
-                                                console.error(
-                                                    "Erro ao confirmar transação:",
-                                                    err
-                                                );
+        console.error(
+            "Erro ao confirmar transação:",
+            err
+        );
 
-                                                db.run(`ROLLBACK`, () => {});
-                                                return;
-                                            }
+        db.run(`ROLLBACK`, () => {});
+        return;
+    }
 
-                                            console.log(
-                                                `Pagamento ${paymentId} aprovado. ` +
-                                                `${creditosComprados} créditos adicionados ao usuário ${usuarioId}.`
-                                            );
-                                        });
+    console.log(
+        `Pagamento ${paymentId} aprovado. ` +
+        `${creditosComprados} créditos adicionados ao usuário ${usuarioId}.`
+    );
+
+    // Envia Purchase para a Meta somente depois
+    // que o pagamento foi confirmado e a transação foi concluída.
+    try {
+
+        db.get(
+            `SELECT email FROM usuarios WHERE id = ?`,
+            [usuarioId],
+            async (emailErr, usuario) => {
+
+                if (emailErr) {
+                    console.error(
+                        "Erro ao buscar e-mail para a Meta:",
+                        emailErr
+                    );
+                    return;
+                }
+
+                await enviarPurchaseMeta({
+                    paymentId: paymentId,
+                    email: usuario?.email,
+                    valor: valorPago
+                });
+
+            }
+        );
+
+    } catch (erroMeta) {
+
+        console.error(
+            "Erro ao preparar Purchase da Meta:",
+            erroMeta
+        );
+
+    }
+});
                                     }
                                 );
                             }
