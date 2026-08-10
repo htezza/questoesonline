@@ -292,6 +292,12 @@ app.post('/api/criar-pagamento', verificarToken, async (req, res) => {
         wbraid
     } = req.body;
 
+    console.log('===== GOOGLE ADS - TESTE =====');
+console.log('GCLID recebido:', gclid);
+console.log('GBRAID recebido:', gbraid);
+console.log('WBRAID recebido:', wbraid);
+console.log('================================');
+
     let usuarioId = req.usuarioId;
 
     const pacotes = {
