@@ -765,10 +765,127 @@ let corrigindo = false;
 const TOKEN_KEY = "token_jwt_questoes";
 let usuarioTemCpf = false; // VARIÁVEL DE CONTROLE GLOBAL
 
+    // ============================================================
+// GOOGLE ADS - CONVERSÃO DE COMPRA
+// ============================================================
+async function verificarERegistrarCompraGoogleAds() {
+
+    const params = new URLSearchParams(window.location.search);
+
+    if (params.get('pagamento') !== 'sucesso') {
+        return;
+    }
+
+    const paymentId =
+        params.get('payment_id') ||
+        params.get('collection_id');
+
+    if (!paymentId) {
+        console.log("Retorno de pagamento sem payment_id.");
+        return;
+    }
+
+    const chaveConversao =
+        `google_ads_compra_${paymentId}`;
+
+    // Impede que atualizar a página conte a mesma compra novamente.
+    if (localStorage.getItem(chaveConversao)) {
+        console.log(
+            "Conversão Google Ads já registrada para:",
+            paymentId
+        );
+        return;
+    }
+
+    const token = localStorage.getItem(TOKEN_KEY);
+
+    if (!token) {
+        console.log(
+            "Usuário não autenticado para confirmar a compra."
+        );
+        return;
+    }
+
+    // O webhook pode levar alguns segundos para registrar a compra.
+    // Fazemos algumas tentativas antes de desistir.
+    for (let tentativa = 1; tentativa <= 10; tentativa++) {
+
+        try {
+
+            const resposta = await fetch(
+                `/api/verificar-compra/${encodeURIComponent(paymentId)}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
+
+            const dados = await resposta.json();
+
+            if (
+                resposta.ok &&
+                dados.confirmada &&
+                dados.paymentId
+            ) {
+
+                if (typeof gtag === 'function') {
+
+                    gtag('event', 'conversion', {
+                        'send_to':
+                            'AW-18382159105/LQSRCKiMoN8cElH6p1E',
+
+                        'value':
+                            Number(dados.valor) || 0,
+
+                        'currency':
+                            'BRL',
+
+                        'transaction_id':
+                            String(dados.paymentId)
+                    });
+
+                    console.log(
+                        "Conversão Google Ads registrada:",
+                        dados.paymentId,
+                        dados.valor
+                    );
+
+                    localStorage.setItem(
+                        chaveConversao,
+                        '1'
+                    );
+                }
+
+                return;
+            }
+
+        } catch (erro) {
+
+            console.error(
+                "Erro ao verificar compra para Google Ads:",
+                erro
+            );
+        }
+
+        // Aguarda 1 segundo antes da próxima tentativa.
+        await new Promise(
+            resolve => setTimeout(resolve, 1000)
+        );
+    }
+
+    console.log(
+        "Compra ainda não encontrada no banco após as tentativas:",
+        paymentId
+    );
+}
+
 window.addEventListener("DOMContentLoaded", () => {
     let token = localStorage.getItem(TOKEN_KEY);
     if (token) carregarDadosUsuario(token);
 
+    verificarERegistrarCompraGoogleAds();
+    
     // Adiciona o evento de pressionar Enter nos campos de login
     const dispararLoginComEnter = (event) => {
         if (event.key === "Enter") {
