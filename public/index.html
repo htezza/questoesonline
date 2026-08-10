@@ -25,6 +25,17 @@ src="https://www.facebook.com/tr?id=1548997376693347&ev=PageView&noscript=1"/>
 </noscript>
 <!-- End Meta Pixel Code -->
 
+<!-- Google Ads -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18382159105"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'AW-18382159105');
+</script>
+<!-- Fim Google Ads -->
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -884,6 +895,13 @@ if (typeof fbq === 'function') {
     fbq('track', 'CompleteRegistration');
 }
 
+        // Google Ads — cadastro concluído
+if (typeof gtag === 'function') {
+    gtag('event', 'sign_up', {
+        method: 'email'
+    });
+}
+
 alert("Conta criada com sucesso! Faça login para continuar.");
 document.getElementById("loginEmail").value = email;
 mostrarTelaRegistro(false);
@@ -1085,6 +1103,12 @@ async function comprarCreditos(pacoteId) {
         if (typeof fbq === 'function') {
             fbq('track', 'InitiateCheckout');
         }
+
+        // Google Ads — início do checkout
+if (typeof gtag === 'function') {
+    gtag('event', 'begin_checkout');
+}
+
 
         window.location.href = data.init_point;
 
