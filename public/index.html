@@ -766,6 +766,34 @@ const TOKEN_KEY = "token_jwt_questoes";
 let usuarioTemCpf = false; // VARIÁVEL DE CONTROLE GLOBAL
 
     // ============================================================
+// GOOGLE ADS - CAPTURA DOS IDENTIFICADORES DO CLIQUE
+// ============================================================
+(function capturarIdentificadoresGoogleAds() {
+
+    const params = new URLSearchParams(window.location.search);
+
+    const gclid = params.get('gclid');
+    const gbraid = params.get('gbraid');
+    const wbraid = params.get('wbraid');
+
+    if (gclid) {
+        localStorage.setItem('google_gclid', gclid);
+        console.log('Google Ads - GCLID capturado:', gclid);
+    }
+
+    if (gbraid) {
+        localStorage.setItem('google_gbraid', gbraid);
+        console.log('Google Ads - GBRAID capturado:', gbraid);
+    }
+
+    if (wbraid) {
+        localStorage.setItem('google_wbraid', wbraid);
+        console.log('Google Ads - WBRAID capturado:', wbraid);
+    }
+
+})();
+
+    // ============================================================
 // GOOGLE ADS - CONVERSÃO DE COMPRA
 // ============================================================
 async function verificarERegistrarCompraGoogleAds() {
@@ -1180,7 +1208,25 @@ async function comprarCreditos(pacoteId) {
     }
 
     const fbp = obterCookie('_fbp');
-    const fbc = obterCookie('_fbc');
+const fbc = obterCookie('_fbc');
+
+// Google Ads — identificadores do clique
+const googleParams = new URLSearchParams(window.location.search);
+
+const gclid =
+    localStorage.getItem('google_gclid') ||
+    googleParams.get('gclid') ||
+    null;
+
+const gbraid =
+    localStorage.getItem('google_gbraid') ||
+    googleParams.get('gbraid') ||
+    null;
+
+const wbraid =
+    localStorage.getItem('google_wbraid') ||
+    googleParams.get('wbraid') ||
+    null;
 
     if (!usuarioTemCpf) {
         cpf = prompt("Para prosseguir com a compra, por favor informe o seu CPF (apenas números):");
@@ -1197,13 +1243,15 @@ async function comprarCreditos(pacoteId) {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({
-                pacoteId,
-                cpf,
-                fbp,
-                fbc
-            })
-        });
+           body: JSON.stringify({
+    pacoteId,
+    cpf,
+    fbp,
+    fbc,
+    gclid,
+    gbraid,
+    wbraid
+})
 
         let data = await res.json();
 
