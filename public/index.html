@@ -1033,12 +1033,17 @@ async function comprarCreditos(pacoteId) {
             body: JSON.stringify({ pacoteId, cpf })
         });
         let data = await res.json();
-        if(!res.ok) { alert(data.erro); return; }
-        
-        // Se a compra foi iniciada e enviamos um cpf novo com sucesso, guardamos na sessão atual.
-        if (cpf) usuarioTemCpf = true; 
+if(!res.ok) { alert(data.erro); return; }
 
-        window.location.href = data.init_point;
+// Se a compra foi iniciada e enviamos um cpf novo com sucesso, guardamos na sessão atual.
+if (cpf) usuarioTemCpf = true;
+
+// Meta Pixel — início do checkout
+if (typeof fbq === 'function') {
+    fbq('track', 'InitiateCheckout');
+}
+
+window.location.href = data.init_point;
     } catch(e) {
         alert("Erro ao iniciar o pagamento.");
     }
