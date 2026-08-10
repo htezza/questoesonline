@@ -1017,7 +1017,18 @@ async function executarAlterarSenhaUsuario() {
 async function comprarCreditos(pacoteId) {
     let token = localStorage.getItem(TOKEN_KEY);
     let cpf = null;
-    
+
+    // Captura os cookies usados pela Meta para atribuição
+    function obterCookie(nome) {
+        const match = document.cookie.match(
+            new RegExp('(^|;\\s*)' + nome + '=([^;]*)')
+        );
+        return match ? decodeURIComponent(match[2]) : null;
+    }
+
+    const fbp = obterCookie('_fbp');
+    const fbc = obterCookie('_fbc');
+
     if (!usuarioTemCpf) {
         cpf = prompt("Para prosseguir com a compra, por favor informe o seu CPF (apenas números):");
         if (!cpf) {
@@ -1029,22 +1040,37 @@ async function comprarCreditos(pacoteId) {
     try {
         let res = await fetch('/api/criar-pagamento', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ pacoteId, cpf })
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                pacoteId,
+                cpf,
+                fbp,
+                fbc
+            })
         });
+
         let data = await res.json();
-if(!res.ok) { alert(data.erro); return; }
 
-// Se a compra foi iniciada e enviamos um cpf novo com sucesso, guardamos na sessão atual.
-if (cpf) usuarioTemCpf = true;
+        if (!res.ok) {
+            alert(data.erro);
+            return;
+        }
 
-// Meta Pixel — início do checkout
-if (typeof fbq === 'function') {
-    fbq('track', 'InitiateCheckout');
-}
+        // Se a compra foi iniciada e enviamos um cpf novo com sucesso, guardamos na sessão atual.
+        if (cpf) usuarioTemCpf = true;
 
-window.location.href = data.init_point;
+        // Meta Pixel — início do checkout
+        if (typeof fbq === 'function') {
+            fbq('track', 'InitiateCheckout');
+        }
+
+        window.location.href = data.init_point;
+
     } catch(e) {
+        console.error("Erro ao iniciar pagamento:", e);
         alert("Erro ao iniciar o pagamento.");
     }
 }
