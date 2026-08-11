@@ -846,8 +846,8 @@ let usuarioTemCpf = false; // VARIÁVEL DE CONTROLE GLOBAL
 
 })();
 
-    // ============================================================
-// GOOGLE ADS - CONVERSÃO DE COMPRA
+// ============================================================
+// GOOGLE ADS + GOOGLE ANALYTICS 4 - CONVERSÃO DE COMPRA
 // ============================================================
 async function verificarERegistrarCompraGoogleAds() {
 
@@ -866,17 +866,11 @@ async function verificarERegistrarCompraGoogleAds() {
         return;
     }
 
-    const chaveConversao =
+    const chaveGoogleAds =
         `google_ads_compra_${paymentId}`;
 
-    // Impede que atualizar a página conte a mesma compra novamente.
-    if (localStorage.getItem(chaveConversao)) {
-        console.log(
-            "Conversão Google Ads já registrada para:",
-            paymentId
-        );
-        return;
-    }
+    const chaveGA4 =
+        `ga4_purchase_${paymentId}`;
 
     const token = localStorage.getItem(TOKEN_KEY);
 
@@ -910,29 +904,87 @@ async function verificarERegistrarCompraGoogleAds() {
                 dados.paymentId
             ) {
 
-                if (typeof gtag === 'function') {
+                // ====================================================
+                // GOOGLE ANALYTICS 4 - PURCHASE
+                // ====================================================
+                if (
+                    typeof gtag === 'function' &&
+                    !localStorage.getItem(chaveGA4)
+                ) {
 
-                    gtag('event', 'conversion', {
-                        'send_to':
-                            'AW-18382159105/LQSRCKiMoN8cEIH6pb1E',
-                        'value':
+                    gtag('event', 'purchase', {
+
+                        transaction_id:
+                            String(dados.paymentId),
+
+                        value:
                             Number(dados.valor) || 0,
 
-                        'currency':
+                        currency:
                             'BRL',
 
-                        'transaction_id':
-                            String(dados.paymentId)
+                        items: [
+                            {
+                                item_id:
+                                    `creditos_${dados.quantidade}`,
+
+                                item_name:
+                                    `${dados.quantidade} Créditos`,
+
+                                quantity: 1,
+
+                                price:
+                                    Number(dados.valor) || 0
+                            }
+                        ]
+
                     });
 
                     console.log(
-                        "Conversão Google Ads registrada:",
+                        "GA4 - Purchase registrado:",
                         dados.paymentId,
                         dados.valor
                     );
 
                     localStorage.setItem(
-                        chaveConversao,
+                        chaveGA4,
+                        '1'
+                    );
+                }
+
+
+                // ====================================================
+                // GOOGLE ADS - CONVERSÃO DE COMPRA
+                // ====================================================
+                if (
+                    typeof gtag === 'function' &&
+                    !localStorage.getItem(chaveGoogleAds)
+                ) {
+
+                    gtag('event', 'conversion', {
+
+                        send_to:
+                            'AW-18382159105/LQSRCKiMoN8cEIH6pb1E',
+
+                        value:
+                            Number(dados.valor) || 0,
+
+                        currency:
+                            'BRL',
+
+                        transaction_id:
+                            String(dados.paymentId)
+
+                    });
+
+                    console.log(
+                        "Google Ads - Conversão registrada:",
+                        dados.paymentId,
+                        dados.valor
+                    );
+
+                    localStorage.setItem(
+                        chaveGoogleAds,
                         '1'
                     );
                 }
@@ -943,9 +995,10 @@ async function verificarERegistrarCompraGoogleAds() {
         } catch (erro) {
 
             console.error(
-                "Erro ao verificar compra para Google Ads:",
+                "Erro ao verificar compra:",
                 erro
             );
+
         }
 
         // Aguarda 1 segundo antes da próxima tentativa.
