@@ -942,6 +942,8 @@ app.get('/api/admin/estatisticas', verificarToken, verificarAdmin, async (req, r
         const usuariosTeste = [
             'hugo.tezza@gmail.com',
             'hugo.tezza1@gmail.com',
+            'hugo.tezza2@gmail.com',
+            'hugo.tezza3@gmail.com',
             'isabela.cf.decarvalho@gmail.com'
         ];
 
