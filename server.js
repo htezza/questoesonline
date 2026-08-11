@@ -1189,6 +1189,12 @@ app.get('/api/admin/estatisticas', verificarToken, verificarAdmin, async (req, r
 app.get('/api/admin/acessos', verificarToken, verificarAdmin, (req, res) => {
 
     const queries = {
+        visitantes_unicos: `
+    SELECT COUNT(DISTINCT visitor_id) AS total
+    FROM acessos
+    WHERE visitor_id IS NOT NULL
+`,
+        
         total: `
             SELECT COUNT(*) AS total
             FROM acessos
@@ -1251,22 +1257,24 @@ app.get('/api/admin/acessos', verificarToken, verificarAdmin, (req, res) => {
 
     Promise.all([
         executarGet(queries.total),
-        executarGet(queries.google_ads),
-        executarGet(queries.instagram),
-        executarGet(queries.direto),
-        executarGet(queries.outros),
-        executarQuery(queries.ultimos)
+executarGet(queries.visitantes_unicos),
+executarGet(queries.google_ads),
+executarGet(queries.instagram),
+executarGet(queries.direto),
+executarGet(queries.outros),
+executarQuery(queries.ultimos)
     ])
-    .then(([total, googleAds, instagram, direto, outros, ultimos]) => {
+    .then(([total, visitantesUnicos, googleAds, instagram, direto, outros, ultimos]) => {
 
         res.json({
-            total: Number(total?.total || 0),
-            google_ads: Number(googleAds?.total || 0),
-            instagram: Number(instagram?.total || 0),
-            direto: Number(direto?.total || 0),
-            outros: Number(outros?.total || 0),
-            ultimos
-        });
+    total: Number(total?.total || 0),
+    visitantes_unicos: Number(visitantesUnicos?.total || 0),
+    google_ads: Number(googleAds?.total || 0),
+    instagram: Number(instagram?.total || 0),
+    direto: Number(direto?.total || 0),
+    outros: Number(outros?.total || 0),
+    ultimos
+});
 
     })
     .catch(err => {
