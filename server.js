@@ -275,8 +275,17 @@ app.use(express.json({ limit: '50mb' }));
 app.post('/api/google-ads-clique', (req, res) => {
     const { gclid, gbraid, wbraid } = req.body || {};
 
+    const veioDoGoogleAds = !!(gclid || gbraid || wbraid);
+
     console.log('================================');
-    console.log('===== GOOGLE ADS - CLIQUE =====');
+    console.log('===== ACESSO AO SITE =====');
+
+    if (veioDoGoogleAds) {
+        console.log('Origem: GOOGLE ADS');
+    } else {
+        console.log('Origem: ACESSO DIRETO / SEM IDENTIFICADOR GOOGLE');
+    }
+
     console.log('GCLID recebido:', gclid || null);
     console.log('GBRAID recebido:', gbraid || null);
     console.log('WBRAID recebido:', wbraid || null);
