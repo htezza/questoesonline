@@ -769,10 +769,10 @@ let corrigindo = false;
 const TOKEN_KEY = "token_jwt_questoes";
 let usuarioTemCpf = false; // VARIÁVEL DE CONTROLE GLOBAL
 
-    // ============================================================
-// GOOGLE ADS - CAPTURA DOS IDENTIFICADORES DO CLIQUE
 // ============================================================
-/*(function capturarIdentificadoresGoogleAds() {
+// CAPTURA DA ORIGEM DO ACESSO
+// ============================================================
+(function registrarOrigemAcesso() {
 
     const params = new URLSearchParams(window.location.search);
 
@@ -780,71 +780,62 @@ let usuarioTemCpf = false; // VARIÁVEL DE CONTROLE GLOBAL
     const gbraid = params.get('gbraid');
     const wbraid = params.get('wbraid');
 
+    const utmSource = (params.get('utm_source') || '').toLowerCase();
+    const utmMedium = params.get('utm_medium') || null;
+    const utmCampaign = params.get('utm_campaign') || null;
+
+    // Guarda os identificadores do Google para a compra futura
     if (gclid) {
         localStorage.setItem('google_gclid', gclid);
-        console.log('Google Ads - GCLID capturado:', gclid);
     }
 
     if (gbraid) {
         localStorage.setItem('google_gbraid', gbraid);
-        console.log('Google Ads - GBRAID capturado:', gbraid);
     }
 
     if (wbraid) {
         localStorage.setItem('google_wbraid', wbraid);
-        console.log('Google Ads - WBRAID capturado:', wbraid);
     }
 
-})();*/
+    let origem = 'direto';
 
-    (function capturarIdentificadoresGoogleAds() {
-
-    const params = new URLSearchParams(window.location.search);
-
-    const gclid = params.get('gclid');
-    const gbraid = params.get('gbraid');
-    const wbraid = params.get('wbraid');
-
-    if (gclid) {
-        localStorage.setItem('google_gclid', gclid);
-        console.log('Google Ads - GCLID capturado:', gclid);
+    // GOOGLE ADS
+    if (gclid || gbraid || wbraid) {
+        origem = 'google_ads';
     }
 
-    if (gbraid) {
-        localStorage.setItem('google_gbraid', gbraid);
-        console.log('Google Ads - GBRAID capturado:', gbraid);
+    // INSTAGRAM
+    else if (
+        utmSource === 'instagram' ||
+        utmSource === 'ig'
+    ) {
+        origem = 'instagram';
     }
 
-    if (wbraid) {
-        localStorage.setItem('google_wbraid', wbraid);
-        console.log('Google Ads - WBRAID capturado:', wbraid);
+    // OUTROS
+    else if (utmSource) {
+        origem = 'outros';
     }
 
-    // ========================================================
-    // TESTE PROVISÓRIO - ENVIA O CLIQUE IMEDIATAMENTE AO RENDER
-    // ========================================================
-    fetch('/api/google-ads-clique', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-        gclid: gclid || null,
-        gbraid: gbraid || null,
-        wbraid: wbraid || null
-    })
-})
-.then(() => {
-    console.log('Google Ads - acesso registrado no Render para teste.');
-})
-.catch((erro) => {
-    console.error(
-        'Google Ads - erro ao registrar acesso de teste:',
-        erro
-    );
-});
+    fetch('/api/registrar-acesso', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            origem,
+            utm_source: utmSource || null,
+            utm_medium: utmMedium,
+            utm_campaign: utmCampaign,
+            gclid: gclid || null,
+            gbraid: gbraid || null,
+            wbraid: wbraid || null
+        })
+    }).catch(() => {});
 
 })();
+
+    
 
 // ============================================================
 // GOOGLE ADS + GOOGLE ANALYTICS 4 - CONVERSÃO DE COMPRA
