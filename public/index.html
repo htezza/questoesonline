@@ -805,6 +805,19 @@ let usuarioTemCpf = false; // VARIÁVEL DE CONTROLE GLOBAL
 (function registrarOrigemAcesso() {
 
     const params = new URLSearchParams(window.location.search);
+    // Identificador anônimo e persistente deste navegador
+let visitorId = localStorage.getItem('visitor_id_questoes');
+
+if (!visitorId) {
+    visitorId = (
+        typeof crypto !== 'undefined' &&
+        typeof crypto.randomUUID === 'function'
+    )
+        ? crypto.randomUUID()
+        : 'v_' + Date.now() + '_' + Math.random().toString(36).substring(2);
+
+    localStorage.setItem('visitor_id_questoes', visitorId);
+}
 
     const gclid = params.get('gclid');
     const gbraid = params.get('gbraid');
@@ -853,14 +866,15 @@ let usuarioTemCpf = false; // VARIÁVEL DE CONTROLE GLOBAL
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            origem,
-            utm_source: utmSource || null,
-            utm_medium: utmMedium,
-            utm_campaign: utmCampaign,
-            gclid: gclid || null,
-            gbraid: gbraid || null,
-            wbraid: wbraid || null
-        })
+    origem,
+    utm_source: utmSource || null,
+    utm_medium: utmMedium,
+    utm_campaign: utmCampaign,
+    gclid: gclid || null,
+    gbraid: gbraid || null,
+    wbraid: wbraid || null,
+    visitor_id: visitorId
+})
     }).catch(() => {});
 
 })();
