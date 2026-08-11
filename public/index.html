@@ -768,7 +768,7 @@ let usuarioTemCpf = false; // VARIÁVEL DE CONTROLE GLOBAL
     // ============================================================
 // GOOGLE ADS - CAPTURA DOS IDENTIFICADORES DO CLIQUE
 // ============================================================
-(function capturarIdentificadoresGoogleAds() {
+/*(function capturarIdentificadoresGoogleAds() {
 
     const params = new URLSearchParams(window.location.search);
 
@@ -789,6 +789,58 @@ let usuarioTemCpf = false; // VARIÁVEL DE CONTROLE GLOBAL
     if (wbraid) {
         localStorage.setItem('google_wbraid', wbraid);
         console.log('Google Ads - WBRAID capturado:', wbraid);
+    }
+
+})();*/
+
+    (function capturarIdentificadoresGoogleAds() {
+
+    const params = new URLSearchParams(window.location.search);
+
+    const gclid = params.get('gclid');
+    const gbraid = params.get('gbraid');
+    const wbraid = params.get('wbraid');
+
+    if (gclid) {
+        localStorage.setItem('google_gclid', gclid);
+        console.log('Google Ads - GCLID capturado:', gclid);
+    }
+
+    if (gbraid) {
+        localStorage.setItem('google_gbraid', gbraid);
+        console.log('Google Ads - GBRAID capturado:', gbraid);
+    }
+
+    if (wbraid) {
+        localStorage.setItem('google_wbraid', wbraid);
+        console.log('Google Ads - WBRAID capturado:', wbraid);
+    }
+
+    // ========================================================
+    // TESTE PROVISÓRIO - ENVIA O CLIQUE IMEDIATAMENTE AO RENDER
+    // ========================================================
+    if (gclid || gbraid || wbraid) {
+
+        fetch('/api/google-ads-clique', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                gclid: gclid || null,
+                gbraid: gbraid || null,
+                wbraid: wbraid || null
+            })
+        })
+        .then(() => {
+            console.log('Google Ads - clique enviado ao Render para teste.');
+        })
+        .catch((erro) => {
+            console.error(
+                'Google Ads - erro ao registrar clique de teste:',
+                erro
+            );
+        });
     }
 
 })();
