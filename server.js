@@ -724,10 +724,10 @@ app.get('/api/verificar-compra/:paymentId', verificarToken, (req, res) => {
     }
 
     db.get(
-        `SELECT payment_id, valor
-         FROM compras
-         WHERE payment_id = ?
-           AND usuario_id = ?`,
+        `SELECT payment_id, valor, quantidade
+ FROM compras
+ WHERE payment_id = ?
+   AND usuario_id = ?`,
         [paymentId, req.usuarioId],
         (err, compra) => {
 
@@ -749,10 +749,11 @@ app.get('/api/verificar-compra/:paymentId', verificarToken, (req, res) => {
             }
 
             return res.json({
-                confirmada: true,
-                paymentId: String(compra.payment_id),
-                valor: Number(compra.valor) || 0
-            });
+    confirmada: true,
+    paymentId: String(compra.payment_id),
+    valor: Number(compra.valor) || 0,
+    quantidade: Number(compra.quantidade) || 0
+});
         }
     );
 });
