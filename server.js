@@ -1213,16 +1213,16 @@ app.get('/api/admin/acessos', verificarToken, verificarAdmin, (req, res) => {
         `,
 
         ultimos: `
-            SELECT
-                origem,
-                utm_source,
-                utm_medium,
-                utm_campaign,
-                data
-            FROM acessos
-            ORDER BY id DESC
-            LIMIT 30
-        `
+    SELECT
+        origem,
+        utm_source,
+        utm_medium,
+        utm_campaign,
+        data
+    FROM acessos
+    ORDER BY id DESC
+    LIMIT 10
+`
     };
 
     const executarQuery = (query) => {
