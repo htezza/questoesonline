@@ -819,29 +819,26 @@ let usuarioTemCpf = false; // VARIÁVEL DE CONTROLE GLOBAL
     // ========================================================
     // TESTE PROVISÓRIO - ENVIA O CLIQUE IMEDIATAMENTE AO RENDER
     // ========================================================
-    if (gclid || gbraid || wbraid) {
-
-        fetch('/api/google-ads-clique', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                gclid: gclid || null,
-                gbraid: gbraid || null,
-                wbraid: wbraid || null
-            })
-        })
-        .then(() => {
-            console.log('Google Ads - clique enviado ao Render para teste.');
-        })
-        .catch((erro) => {
-            console.error(
-                'Google Ads - erro ao registrar clique de teste:',
-                erro
-            );
-        });
-    }
+    fetch('/api/google-ads-clique', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        gclid: gclid || null,
+        gbraid: gbraid || null,
+        wbraid: wbraid || null
+    })
+})
+.then(() => {
+    console.log('Google Ads - acesso registrado no Render para teste.');
+})
+.catch((erro) => {
+    console.error(
+        'Google Ads - erro ao registrar acesso de teste:',
+        erro
+    );
+});
 
 })();
 
