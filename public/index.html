@@ -732,9 +732,10 @@ src="https://www.facebook.com/tr?id=1548997376693347&ev=PageView&noscript=1"/>
 
             <thead>
                 <tr>
-                    <th>Data/Hora</th>
-                    <th>Origem</th>
-                    <th>Campanha</th>
+            <th>Data/Hora</th>
+        <th>Origem</th>
+        <th>Tipo</th>
+        <th>Campanha</th>
                 </tr>
             </thead>
 
@@ -1814,33 +1815,56 @@ async function carregarAcessosAdmin() {
 
         data.ultimos.forEach(acesso => {
 
-            let origemTexto = '🟠 Outros';
+    let origemTexto = '🟠 Outros';
+    let tipoTexto = 'Outro';
 
-            if (acesso.origem === 'google_ads') {
-                origemTexto = '🔵 Google Ads';
-            }
-            else if (acesso.origem === 'instagram') {
-                origemTexto = '🟣 Instagram';
-            }
-            else if (acesso.origem === 'direto') {
-                origemTexto = '⚫ Direto';
-            }
+    // GOOGLE ADS
+    if (acesso.origem === 'google_ads') {
+        origemTexto = '🔵 Google Ads';
+        tipoTexto = 'Anúncio';
+    }
 
-            const dataFormatada =
-                new Date(acesso.data.replace(' ', 'T') + 'Z')
-                .toLocaleString('pt-BR');
+    // INSTAGRAM
+    else if (acesso.origem === 'instagram') {
 
-            const campanha =
-                acesso.utm_campaign || '—';
+        origemTexto = '🟣 Instagram';
 
-            tabela.innerHTML += `
-                <tr>
-                    <td>${dataFormatada}</td>
-                    <td><b>${origemTexto}</b></td>
-                    <td>${campanha}</td>
-                </tr>
-            `;
-        });
+        // Instagram pago
+        if (
+            acesso.utm_medium &&
+            acesso.utm_medium.toLowerCase() === 'paid_social'
+        ) {
+            tipoTexto = 'Anúncio';
+        }
+
+        // Instagram orgânico
+        else {
+            tipoTexto = 'Orgânico';
+        }
+    }
+
+    // ACESSO DIRETO
+    else if (acesso.origem === 'direto') {
+        origemTexto = '⚫ Direto';
+        tipoTexto = 'Direto';
+    }
+
+    const dataFormatada =
+        new Date(acesso.data.replace(' ', 'T') + 'Z')
+        .toLocaleString('pt-BR');
+
+    const campanha =
+        acesso.utm_campaign || '—';
+
+    tabela.innerHTML += `
+        <tr>
+            <td>${dataFormatada}</td>
+            <td><b>${origemTexto}</b></td>
+            <td><b>${tipoTexto}</b></td>
+            <td>${campanha}</td>
+        </tr>
+    `;
+});
 
     } catch (erro) {
 
