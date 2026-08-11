@@ -265,38 +265,8 @@ console.log(
         );
     }
 }
-//app.use(express.json({ limit: '50mb' }));
-//app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json({ limit: '50mb' }));
-
-// ============================================================
-// TESTE PROVISÓRIO - REGISTRO DE CLIQUE GOOGLE ADS
-// ============================================================
-app.post('/api/google-ads-clique', (req, res) => {
-    const { gclid, gbraid, wbraid } = req.body || {};
-
-    const veioDoGoogleAds = !!(gclid || gbraid || wbraid);
-
-    console.log('================================');
-    console.log('===== ACESSO AO SITE =====');
-
-    if (veioDoGoogleAds) {
-        console.log('Origem: GOOGLE ADS');
-    } else {
-        console.log('Origem: ACESSO DIRETO / SEM IDENTIFICADOR GOOGLE');
-    }
-
-    console.log('GCLID recebido:', gclid || null);
-    console.log('GBRAID recebido:', gbraid || null);
-    console.log('WBRAID recebido:', wbraid || null);
-    console.log('Data/hora:', new Date().toISOString());
-    console.log('================================');
-
-    res.status(200).json({ recebido: true });
-});
-
 app.use(express.static(path.join(__dirname, 'public')));
-
 
 // Se estiver no Render, usa o diretório do disco persistente (/data). Caso contrário, usa a pasta local.
 const dbPath = process.env.RENDER ? '/data/banco.db' : './banco.db';
@@ -380,9 +350,24 @@ db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_compras_payment_id
         data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`);
 
-    db.run(`CREATE TABLE IF NOT EXISTS configuracoes (
+        db.run(`CREATE TABLE IF NOT EXISTS configuracoes (
     chave TEXT PRIMARY KEY,
     valor TEXT
+    )`);
+
+    // ============================================================
+    // REGISTRO DE ACESSOS / ORIGEM DOS VISITANTES
+    // ============================================================
+    db.run(`CREATE TABLE IF NOT EXISTS acessos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        origem TEXT NOT NULL,
+        utm_source TEXT,
+        utm_medium TEXT,
+        utm_campaign TEXT,
+        gclid TEXT,
+        gbraid TEXT,
+        wbraid TEXT,
+        data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`);
     
 });
@@ -857,6 +842,70 @@ app.get('/api/creditos', verificarToken, (req, res) => {
     });
 });
 
+// ============================================================
+// REGISTRAR ACESSO / ORIGEM DO VISITANTE
+// ============================================================
+app.post('/api/registrar-acesso', (req, res) => {
+    try {
+        const {
+            origem,
+            utm_source,
+            utm_medium,
+            utm_campaign,
+            gclid,
+            gbraid,
+            wbraid
+        } = req.body || {};
+
+        const origemFinal = String(origem || 'direto').toLowerCase();
+
+        const origensPermitidas = [
+            'google_ads',
+            'instagram',
+            'direto',
+            'outros'
+        ];
+
+        const origemValida = origensPermitidas.includes(origemFinal)
+            ? origemFinal
+            : 'outros';
+
+        db.run(
+            `INSERT INTO acessos
+            (origem, utm_source, utm_medium, utm_campaign, gclid, gbraid, wbraid)
+            VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [
+                origemValida,
+                utm_source || null,
+                utm_medium || null,
+                utm_campaign || null,
+                gclid || null,
+                gbraid || null,
+                wbraid || null
+            ],
+            function(err) {
+                if (err) {
+                    console.error("Erro ao registrar acesso:", err.message);
+                    return res.status(500).json({
+                        erro: "Erro ao registrar acesso."
+                    });
+                }
+
+                res.json({
+                    sucesso: true,
+                    id: this.lastID
+                });
+            }
+        );
+
+    } catch (erro) {
+        console.error("Erro no registro de acesso:", erro);
+        res.status(500).json({
+            erro: "Erro interno."
+        });
+    }
+});
+
 app.get('/api/admin/usuarios', verificarToken, verificarAdmin, (req, res) => {
     db.all(`SELECT id, email, creditos, role FROM usuarios`, [], (err, rows) => {
         if (err) return res.status(500).json({ erro: "Erro ao listar." });
@@ -1126,6 +1175,101 @@ app.get('/api/admin/estatisticas', verificarToken, verificarAdmin, async (req, r
             erro: "Erro interno de métricas: " + error.message
         });
     }
+});
+
+// ============================================================
+// ESTATÍSTICAS DE ACESSOS POR ORIGEM - ADMIN
+// ============================================================
+app.get('/api/admin/acessos', verificarToken, verificarAdmin, (req, res) => {
+
+    const queries = {
+        total: `
+            SELECT COUNT(*) AS total
+            FROM acessos
+        `,
+
+        google_ads: `
+            SELECT COUNT(*) AS total
+            FROM acessos
+            WHERE origem = 'google_ads'
+        `,
+
+        instagram: `
+            SELECT COUNT(*) AS total
+            FROM acessos
+            WHERE origem = 'instagram'
+        `,
+
+        direto: `
+            SELECT COUNT(*) AS total
+            FROM acessos
+            WHERE origem = 'direto'
+        `,
+
+        outros: `
+            SELECT COUNT(*) AS total
+            FROM acessos
+            WHERE origem = 'outros'
+        `,
+
+        ultimos: `
+            SELECT
+                origem,
+                utm_source,
+                utm_medium,
+                utm_campaign,
+                data
+            FROM acessos
+            ORDER BY id DESC
+            LIMIT 30
+        `
+    };
+
+    const executarQuery = (query) => {
+        return new Promise((resolve, reject) => {
+            db.all(query, [], (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows);
+            });
+        });
+    };
+
+    const executarGet = (query) => {
+        return new Promise((resolve, reject) => {
+            db.get(query, [], (err, row) => {
+                if (err) reject(err);
+                else resolve(row);
+            });
+        });
+    };
+
+    Promise.all([
+        executarGet(queries.total),
+        executarGet(queries.google_ads),
+        executarGet(queries.instagram),
+        executarGet(queries.direto),
+        executarGet(queries.outros),
+        executarQuery(queries.ultimos)
+    ])
+    .then(([total, googleAds, instagram, direto, outros, ultimos]) => {
+
+        res.json({
+            total: Number(total?.total || 0),
+            google_ads: Number(googleAds?.total || 0),
+            instagram: Number(instagram?.total || 0),
+            direto: Number(direto?.total || 0),
+            outros: Number(outros?.total || 0),
+            ultimos
+        });
+
+    })
+    .catch(err => {
+        console.error("Erro nas estatísticas de acessos:", err);
+
+        res.status(500).json({
+            erro: "Erro ao carregar acessos."
+        });
+    });
 });
 
 app.post('/api/admin/investimento', verificarToken, verificarAdmin, (req, res) => {
