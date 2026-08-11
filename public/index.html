@@ -714,7 +714,36 @@ src="https://www.facebook.com/tr?id=1548997376693347&ev=PageView&noscript=1"/>
                 <div id="adminStatsGerais" style="margin-bottom: 30px;">
                     <div class="stat-card"><h3>...</h3><p>Carregando...</p></div>
                 </div>
+<!-- ORIGEM DOS ACESSOS -->
+<div style="background:#f8fafc;padding:18px;border-radius:14px;border:1px solid #e2e8f0;margin-bottom:25px;">
 
+    <h3 style="margin:0 0 5px;font-size:16px;">
+        📊 Origem dos Acessos
+    </h3>
+
+    <p style="font-size:12px;color:#64748b;margin:0 0 14px;">
+        Veja de onde estão vindo os visitantes da plataforma.
+    </p>
+
+    <div class="stats-grid" id="adminStatsAcessos" style="margin:0 0 20px;"></div>
+
+    <div class="admin-table-wrapper">
+        <table class="admin-table">
+
+            <thead>
+                <tr>
+                    <th>Data/Hora</th>
+                    <th>Origem</th>
+                    <th>Campanha</th>
+                </tr>
+            </thead>
+
+            <tbody id="tabelaAcessosAdmin"></tbody>
+
+        </table>
+    </div>
+
+</div>
                 <div style="background:#f8fafc;padding:18px;border-radius:14px;border:1px solid #e2e8f0;margin-bottom:18px;">
                     <h3 style="margin:0 0 5px;font-size:16px;">👥 Aquisição e Uso</h3>
                     <p style="font-size:12px;color:#64748b;margin:0 0 14px;">Mostra quantas pessoas chegaram à plataforma e realmente utilizaram o sistema.</p>
@@ -1689,8 +1718,137 @@ async function carregarEstatisticasAdmin() {
             ${card(formatRatio(data.ltv_cac), 'LTV / CAC', '#059669')}
             ${card(formatMoney(data.lucro_liquido), 'Resultado após IA + Marketing', data.lucro_liquido >= 0 ? '#059669' : '#dc2626')}
         `;
-    } catch(e) {
+     } catch(e) {
         console.error("Erro ao carregar estatísticas do admin:", e);
+    }
+
+    carregarAcessosAdmin();
+}
+
+    // ============================================================
+// CARREGAR ACESSOS POR ORIGEM - ADMIN
+// ============================================================
+async function carregarAcessosAdmin() {
+
+    const token = localStorage.getItem(TOKEN_KEY);
+
+    try {
+
+        const res = await fetch('/api/admin/acessos', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            console.error("Erro ao carregar acessos:", data.erro);
+            return;
+        }
+
+        const formatNum = (valor) =>
+            Number(valor || 0).toLocaleString('pt-BR');
+
+        const cardAcesso = (valor, titulo, cor) => `
+            <div class="stat-card">
+                <h3 style="color:${cor};">
+                    ${formatNum(valor)}
+                </h3>
+                <p>${titulo}</p>
+            </div>
+        `;
+
+        document.getElementById('adminStatsAcessos').innerHTML = `
+
+            ${cardAcesso(
+                data.total,
+                'Total de Acessos',
+                '#1e3a8a'
+            )}
+
+            ${cardAcesso(
+                data.google_ads,
+                '🔵 Google Ads',
+                '#2563eb'
+            )}
+
+            ${cardAcesso(
+                data.instagram,
+                '🟣 Instagram',
+                '#9333ea'
+            )}
+
+            ${cardAcesso(
+                data.direto,
+                '⚫ Direto',
+                '#475569'
+            )}
+
+            ${cardAcesso(
+                data.outros,
+                '🟠 Outros',
+                '#ea580c'
+            )}
+
+        `;
+
+        const tabela =
+            document.getElementById('tabelaAcessosAdmin');
+
+        tabela.innerHTML = '';
+
+        if (!data.ultimos || data.ultimos.length === 0) {
+
+            tabela.innerHTML = `
+                <tr>
+                    <td colspan="3"
+                        style="text-align:center;color:#94a3b8;">
+                        Nenhum acesso registrado ainda.
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+        data.ultimos.forEach(acesso => {
+
+            let origemTexto = '🟠 Outros';
+
+            if (acesso.origem === 'google_ads') {
+                origemTexto = '🔵 Google Ads';
+            }
+            else if (acesso.origem === 'instagram') {
+                origemTexto = '🟣 Instagram';
+            }
+            else if (acesso.origem === 'direto') {
+                origemTexto = '⚫ Direto';
+            }
+
+            const dataFormatada =
+                new Date(acesso.data.replace(' ', 'T') + 'Z')
+                .toLocaleString('pt-BR');
+
+            const campanha =
+                acesso.utm_campaign || '—';
+
+            tabela.innerHTML += `
+                <tr>
+                    <td>${dataFormatada}</td>
+                    <td><b>${origemTexto}</b></td>
+                    <td>${campanha}</td>
+                </tr>
+            `;
+        });
+
+    } catch (erro) {
+
+        console.error(
+            "Erro ao carregar acessos administrativos:",
+            erro
+        );
+
     }
 }
 
