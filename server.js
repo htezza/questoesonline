@@ -359,16 +359,20 @@ db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_compras_payment_id
     // REGISTRO DE ACESSOS / ORIGEM DOS VISITANTES
     // ============================================================
     db.run(`CREATE TABLE IF NOT EXISTS acessos (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        origem TEXT NOT NULL,
-        utm_source TEXT,
-        utm_medium TEXT,
-        utm_campaign TEXT,
-        gclid TEXT,
-        gbraid TEXT,
-        wbraid TEXT,
-        data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )`);
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    origem TEXT NOT NULL,
+    utm_source TEXT,
+    utm_medium TEXT,
+    utm_campaign TEXT,
+    gclid TEXT,
+    gbraid TEXT,
+    wbraid TEXT,
+    visitor_id TEXT,
+    data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)`);
+
+// Compatibilidade com bancos já existentes
+db.run(`ALTER TABLE acessos ADD COLUMN visitor_id TEXT`, () => {});
     
 });
 
@@ -848,14 +852,15 @@ app.get('/api/creditos', verificarToken, (req, res) => {
 app.post('/api/registrar-acesso', (req, res) => {
     try {
         const {
-            origem,
-            utm_source,
-            utm_medium,
-            utm_campaign,
-            gclid,
-            gbraid,
-            wbraid
-        } = req.body || {};
+    origem,
+    utm_source,
+    utm_medium,
+    utm_campaign,
+    gclid,
+    gbraid,
+    wbraid,
+    visitor_id
+} = req.body || {};
 
         const origemFinal = String(origem || 'direto').toLowerCase();
 
@@ -871,18 +876,19 @@ app.post('/api/registrar-acesso', (req, res) => {
             : 'outros';
 
         db.run(
-            `INSERT INTO acessos
-            (origem, utm_source, utm_medium, utm_campaign, gclid, gbraid, wbraid)
-            VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [
-                origemValida,
-                utm_source || null,
-                utm_medium || null,
-                utm_campaign || null,
-                gclid || null,
-                gbraid || null,
-                wbraid || null
-            ],
+    `INSERT INTO acessos
+    (origem, utm_source, utm_medium, utm_campaign, gclid, gbraid, wbraid, visitor_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+        origemValida,
+        utm_source || null,
+        utm_medium || null,
+        utm_campaign || null,
+        gclid || null,
+        gbraid || null,
+        wbraid || null,
+        visitor_id || null
+    ],
             function(err) {
                 if (err) {
                     console.error("Erro ao registrar acesso:", err.message);
