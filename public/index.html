@@ -385,6 +385,374 @@ src="https://www.facebook.com/tr?id=1548997376693347&ev=PageView&noscript=1"/>
 .result-score{font-size:34px;color:#15803d;line-height:1;margin:8px 0;} .result-sub{font-size:13px;color:#166534;font-weight:600;}
 .result-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:15px;} .result-actions button{width:auto;margin:0;min-width:170px;}
 @media(max-width:700px){.ux-steps{grid-template-columns:repeat(2,1fr)}.generator-options{grid-template-columns:1fr}.credit-banner{align-items:flex-start}.credit-banner button{flex-shrink:0}.generator-card{padding:14px}.generator-actions button{min-width:100%;}.question-summary{gap:6px}.result-score{font-size:30px}}
+
+
+    /* ============================================================
+       NOVO LAYOUT — PAINEL ADMINISTRATIVO
+       Apenas visual. IDs e funções existentes são preservados.
+       ============================================================ */
+    .admin-dashboard{
+        margin: -8px -8px 0;
+        color:#0f172a;
+    }
+    .admin-header{
+        display:flex;
+        justify-content:space-between;
+        align-items:flex-start;
+        gap:18px;
+        margin-bottom:22px;
+        padding:4px 2px 0;
+    }
+    .admin-brand{
+        display:flex;
+        align-items:center;
+        gap:13px;
+    }
+    .admin-brand-icon{
+        width:48px;
+        height:48px;
+        border-radius:14px;
+        display:grid;
+        place-items:center;
+        background:linear-gradient(135deg,#0f3b82,#2563eb);
+        color:white;
+        font-size:24px;
+        box-shadow:0 8px 18px rgba(37,99,235,.18);
+        flex:0 0 auto;
+    }
+    .admin-header h1{
+        margin:0 0 3px;
+        font-family:'Lato',sans-serif;
+        font-size:27px;
+        line-height:1.15;
+        color:#0f172a;
+        letter-spacing:-.4px;
+    }
+    .admin-header p{
+        margin:0;
+        color:#64748b;
+        font-size:13px;
+    }
+    .admin-status{
+        display:inline-flex;
+        align-items:center;
+        gap:7px;
+        padding:8px 11px;
+        border:1px solid #dbeafe;
+        background:#eff6ff;
+        border-radius:10px;
+        color:#1d4ed8;
+        font-size:12px;
+        font-weight:700;
+        white-space:nowrap;
+    }
+    .admin-status-dot{
+        width:8px;
+        height:8px;
+        border-radius:50%;
+        background:#22c55e;
+        box-shadow:0 0 0 3px #dcfce7;
+    }
+    .admin-kpi-grid{
+        display:grid;
+        grid-template-columns:repeat(5,minmax(0,1fr));
+        gap:12px;
+        margin-bottom:18px;
+    }
+    .admin-dashboard .admin-kpi-grid > .stat-card{
+        min-height:122px;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        text-align:left;
+        padding:17px;
+        background:#fff;
+        border:1px solid #e5e7eb;
+        border-radius:14px;
+        box-shadow:0 3px 12px rgba(15,23,42,.045);
+        position:relative;
+        overflow:hidden;
+    }
+    .admin-dashboard .admin-kpi-grid > .stat-card::before{
+        content:'';
+        position:absolute;
+        left:0;
+        top:0;
+        bottom:0;
+        width:4px;
+        background:#2563eb;
+    }
+    .admin-dashboard .admin-kpi-grid > .stat-card:nth-child(2)::before{background:#16a34a;}
+    .admin-dashboard .admin-kpi-grid > .stat-card:nth-child(3)::before{background:#7c3aed;}
+    .admin-dashboard .admin-kpi-grid > .stat-card:nth-child(4)::before{background:#f59e0b;}
+    .admin-dashboard .admin-kpi-grid > .stat-card:nth-child(5)::before{background:#16a34a;}
+    .admin-dashboard .admin-kpi-grid > .stat-card h3{
+        font-family:'Lato',sans-serif;
+        font-size:26px;
+        line-height:1;
+        margin:0 0 9px;
+        color:#0f172a;
+    }
+    .admin-dashboard .admin-kpi-grid > .stat-card p{
+        margin:0;
+        font-size:11px;
+        letter-spacing:.35px;
+        text-transform:uppercase;
+        color:#64748b;
+        font-weight:800;
+    }
+    .admin-section{
+        background:#fff;
+        border:1px solid #e5e7eb;
+        border-radius:15px;
+        padding:18px;
+        margin-bottom:16px;
+        box-shadow:0 3px 12px rgba(15,23,42,.035);
+    }
+    .admin-section-header{
+        display:flex;
+        justify-content:space-between;
+        align-items:flex-start;
+        gap:12px;
+        margin-bottom:15px;
+    }
+    .admin-section-title{
+        display:flex;
+        align-items:flex-start;
+        gap:10px;
+    }
+    .admin-section-icon{
+        width:34px;
+        height:34px;
+        border-radius:9px;
+        display:grid;
+        place-items:center;
+        background:#eff6ff;
+        color:#2563eb;
+        font-size:17px;
+        flex:0 0 auto;
+    }
+    .admin-section h3{
+        font-family:'Lato',sans-serif;
+        color:#0f172a;
+        font-size:16px;
+        margin:0 0 3px;
+    }
+    .admin-section-header p{
+        margin:0;
+        font-size:12px;
+        color:#94a3b8;
+    }
+    .admin-section-tag{
+        padding:6px 9px;
+        border-radius:8px;
+        background:#f8fafc;
+        border:1px solid #e2e8f0;
+        color:#64748b;
+        font-size:11px;
+        font-weight:700;
+        white-space:nowrap;
+    }
+    .admin-dashboard .stats-grid{
+        margin:0;
+        gap:10px;
+    }
+    .admin-dashboard .stats-grid .stat-card{
+        background:#f8fafc;
+        border:1px solid #e5e7eb;
+        border-radius:11px;
+        box-shadow:none;
+        padding:14px 12px;
+    }
+    .admin-dashboard .stats-grid .stat-card h3{
+        font-family:'Lato',sans-serif;
+        font-size:21px;
+        margin:0 0 6px;
+    }
+    .admin-dashboard .stats-grid .stat-card p{
+        font-size:10px;
+        margin:0;
+        letter-spacing:.35px;
+    }
+    .admin-access-grid{
+        display:grid;
+        grid-template-columns:1fr 1.35fr;
+        gap:16px;
+        align-items:stretch;
+    }
+    .admin-access-summary{
+        display:grid;
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:10px;
+    }
+    .admin-access-summary .stat-card{
+        min-height:88px;
+        text-align:left;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+    }
+    .admin-table-shell{
+        border:1px solid #e5e7eb;
+        border-radius:11px;
+        overflow:hidden;
+        background:#fff;
+    }
+    .admin-dashboard .admin-table-wrapper{
+        margin-top:0;
+    }
+    .admin-dashboard .admin-table{
+        border:0;
+        border-radius:0;
+        min-width:620px;
+    }
+    .admin-dashboard .admin-table th{
+        background:#f8fafc;
+        color:#64748b;
+        padding:11px 12px;
+        font-size:10px;
+        text-transform:uppercase;
+        letter-spacing:.35px;
+        font-weight:800;
+    }
+    .admin-dashboard .admin-table td{
+        padding:11px 12px;
+        font-size:12px;
+        color:#334155;
+        border-bottom:1px solid #f1f5f9;
+    }
+    .admin-dashboard .admin-table tbody tr:last-child td{border-bottom:0;}
+    .admin-dashboard .admin-table tbody tr:hover{background:#f8fafc;}
+    .admin-funnel{
+        display:grid;
+        grid-template-columns:repeat(4,1fr);
+        gap:10px;
+    }
+    .admin-funnel-item{
+        padding:14px;
+        border:1px solid #e5e7eb;
+        border-radius:11px;
+        background:#fff;
+    }
+    .admin-funnel-label{
+        display:flex;
+        align-items:center;
+        gap:7px;
+        color:#64748b;
+        font-size:11px;
+        font-weight:700;
+        margin-bottom:7px;
+    }
+    .admin-funnel-value{
+        font-size:23px;
+        font-weight:800;
+        color:#0f172a;
+        margin-bottom:9px;
+    }
+    .admin-funnel-bar{
+        height:7px;
+        border-radius:20px;
+        background:#e2e8f0;
+        overflow:hidden;
+    }
+    .admin-funnel-fill{
+        height:100%;
+        border-radius:20px;
+        background:#2563eb;
+        min-width:3px;
+    }
+    .admin-funnel-item:nth-child(2) .admin-funnel-fill{background:#16a34a;}
+    .admin-funnel-item:nth-child(3) .admin-funnel-fill{background:#f59e0b;}
+    .admin-funnel-item:nth-child(4) .admin-funnel-fill{background:#7c3aed;}
+    .admin-economy-note{
+        margin-top:12px;
+        padding:10px 12px;
+        background:#f8fafc;
+        border:1px solid #e2e8f0;
+        border-radius:9px;
+        color:#64748b;
+        font-size:11px;
+        line-height:1.45;
+    }
+    .admin-investment-box{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:18px;
+        padding:15px;
+        background:#f8fafc;
+        border:1px solid #e2e8f0;
+        border-radius:11px;
+    }
+    .admin-investment-box h4{
+        margin:0 0 4px;
+        color:#0f172a;
+        font-size:14px;
+    }
+    .admin-investment-box p{
+        margin:0;
+        color:#64748b;
+        font-size:11px;
+    }
+    .admin-investment-form{
+        display:flex;
+        gap:8px;
+        width:360px;
+        max-width:100%;
+    }
+    .admin-investment-form input{
+        margin:0;
+        background:#fff;
+        min-width:0;
+    }
+    .admin-investment-form button{
+        width:auto;
+        margin:0;
+        padding:0 18px;
+        background:#16a34a;
+        white-space:nowrap;
+    }
+    .admin-users-header{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:12px;
+        margin-bottom:13px;
+    }
+    .admin-users-header h3{margin:0;font-family:'Lato',sans-serif;color:#0f172a;font-size:16px;}
+    .admin-users-header span{font-size:11px;color:#94a3b8;}
+    .admin-users-section .admin-table input{
+        background:#fff;
+        border-radius:7px;
+        border:1px solid #cbd5e1;
+    }
+    .admin-users-section .admin-table button{
+        border-radius:7px;
+    }
+    @media(max-width:900px){
+        .admin-kpi-grid{grid-template-columns:repeat(3,1fr);}
+        .admin-access-grid{grid-template-columns:1fr;}
+        .admin-funnel{grid-template-columns:repeat(2,1fr);}
+    }
+    @media(max-width:620px){
+        .admin-dashboard{margin:0;}
+        .admin-header{align-items:flex-start;}
+        .admin-header h1{font-size:23px;}
+        .admin-status{display:none;}
+        .admin-kpi-grid{grid-template-columns:repeat(2,1fr);}
+        .admin-access-summary{grid-template-columns:repeat(2,1fr);}
+        .admin-funnel{grid-template-columns:1fr 1fr;}
+        .admin-investment-box{display:block;}
+        .admin-investment-form{width:100%;margin-top:12px;}
+    }
+    @media(max-width:420px){
+        .admin-kpi-grid{grid-template-columns:1fr 1fr;gap:8px;}
+        .admin-dashboard .admin-kpi-grid > .stat-card{min-height:105px;padding:13px;}
+        .admin-dashboard .admin-kpi-grid > .stat-card h3{font-size:22px;}
+        .admin-section{padding:13px;}
+        .admin-funnel{grid-template-columns:1fr;}
+    }
+
 </style>
 </head>
 
@@ -704,91 +1072,159 @@ src="https://www.facebook.com/tr?id=1548997376693347&ev=PageView&noscript=1"/>
 
             <!-- ABA 4: PAINEL ADMINISTRATIVO -->
             <div id="tabAdmin" class="hidden">
-                <h1>⚙️ Gestão de Plataforma</h1>
-                <p style="text-align:center;color:#64748b;">Acompanhe métricas de negócio e gerencie usuários.</p>
+                <div class="admin-dashboard">
 
-                <!-- DASHBOARD EXECUTIVO -->
-                <h3 style="margin-top: 25px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">📈 Dashboard Executivo</h3>
-                <p style="font-size:13px;color:#64748b;margin:0 0 18px;">Visão do funil: cadastro → uso → compra → recorrência.</p>
-
-                <div id="adminStatsGerais" style="margin-bottom: 30px;">
-                    <div class="stat-card"><h3>...</h3><p>Carregando...</p></div>
-                </div>
-<!-- ORIGEM DOS ACESSOS -->
-<div style="background:#f8fafc;padding:18px;border-radius:14px;border:1px solid #e2e8f0;margin-bottom:25px;">
-
-    <h3 style="margin:0 0 5px;font-size:16px;">
-        📊 Origem dos Acessos
-    </h3>
-
-    <p style="font-size:12px;color:#64748b;margin:0 0 14px;">
-        Veja de onde estão vindo os visitantes da plataforma.
-    </p>
-
-    <div class="stats-grid" id="adminStatsAcessos" style="margin:0 0 20px;"></div>
-
-    <div class="admin-table-wrapper">
-        <table class="admin-table">
-
-            <thead>
-                <tr>
-            <th>Data/Hora</th>
-        <th>Origem</th>
-        <th>Tipo</th>
-        <th>Campanha</th>
-                </tr>
-            </thead>
-
-            <tbody id="tabelaAcessosAdmin"></tbody>
-
-        </table>
-    </div>
-
-</div>
-                <div style="background:#f8fafc;padding:18px;border-radius:14px;border:1px solid #e2e8f0;margin-bottom:18px;">
-                    <h3 style="margin:0 0 5px;font-size:16px;">👥 Aquisição e Uso</h3>
-                    <p style="font-size:12px;color:#64748b;margin:0 0 14px;">Mostra quantas pessoas chegaram à plataforma e realmente utilizaram o sistema.</p>
-                    <div class="stats-grid" id="adminStatsAquisicao" style="margin:0;"></div>
-                </div>
-
-                <div style="background:#f8fafc;padding:18px;border-radius:14px;border:1px solid #e2e8f0;margin-bottom:18px;">
-                    <h3 style="margin:0 0 5px;font-size:16px;">💳 Conversão e Receita</h3>
-                    <p style="font-size:12px;color:#64748b;margin:0 0 14px;">Mostra quem virou cliente e quanto a plataforma já faturou.</p>
-                    <div class="stats-grid" id="adminStatsReceita" style="margin:0;"></div>
-                </div>
-
-                <div style="background:#f8fafc;padding:18px;border-radius:14px;border:1px solid #e2e8f0;margin-bottom:25px;">
-                    <h3 style="margin:0 0 5px;font-size:16px;">📊 Economia do Negócio</h3>
-                    <p style="font-size:12px;color:#64748b;margin:0 0 14px;">Indicadores de marketing, IA e retorno financeiro. O resultado considera apenas os custos cadastrados no painel e o custo estimado da IA.</p>
-                    <div class="stats-grid" id="adminStatsEconomia" style="margin:0;"></div>
-                </div>
-
-                <div style="background:#f8fafc; padding:20px; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:25px;">
-                    <h3 style="margin-top:0; font-size:16px;">💰 Configurar Investimento em Marketing</h3>
-                    <p style="font-size:13px; color:#64748b;">Informe quanto você já investiu em marketing e vendas até o momento.</p>
-                    <div style="display:flex; gap:10px; max-width:400px;">
-                        <input type="number" id="inputInvestimentoMarketing" placeholder="Ex: 1500.00" style="margin:0;">
-                        <button onclick="salvarInvestimentoAdmin()" style="width:auto; margin:0; background:#16a34a; padding:0 20px;">Salvar</button>
+                    <div class="admin-header">
+                        <div class="admin-brand">
+                            <div class="admin-brand-icon">📝</div>
+                            <div>
+                                <h1>Dashboard</h1>
+                                <p>Visão geral completa da plataforma Questões Online</p>
+                            </div>
+                        </div>
+                        <div class="admin-status"><span class="admin-status-dot"></span> Sistema operacional</div>
                     </div>
-                </div>
 
-                <h3 style="margin-top: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">👥 Gerenciamento de Usuários</h3>
-                <div class="admin-table-wrapper">
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>E-mail</th>
-                                <th>Créditos</th>
-                                <th>Função</th>
-                                <th style="text-align: center;">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabelaUsuariosAdmin"></tbody>
-                    </table>
+                    <!-- KPIs PRINCIPAIS -->
+                    <div class="admin-kpi-grid" id="adminStatsGerais">
+                        <div class="stat-card"><h3>...</h3><p>Carregando...</p></div>
+                    </div>
+
+                    <!-- ORIGEM DOS ACESSOS -->
+                    <div class="admin-section">
+                        <div class="admin-section-header">
+                            <div class="admin-section-title">
+                                <div class="admin-section-icon">🌐</div>
+                                <div>
+                                    <h3>Origem dos Acessos</h3>
+                                    <p>Veja de onde estão vindo os visitantes da plataforma.</p>
+                                </div>
+                            </div>
+                            <span class="admin-section-tag">Acessos recentes</span>
+                        </div>
+
+                        <div class="admin-access-grid">
+                            <div class="admin-access-summary" id="adminStatsAcessos"></div>
+
+                            <div class="admin-table-shell">
+                                <div class="admin-table-wrapper">
+                                    <table class="admin-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Data/Hora</th>
+                                                <th>Origem</th>
+                                                <th>Tipo</th>
+                                                <th>Campanha</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tabelaAcessosAdmin"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FUNIL DE AQUISIÇÃO -->
+                    <div class="admin-section">
+                        <div class="admin-section-header">
+                            <div class="admin-section-title">
+                                <div class="admin-section-icon">📈</div>
+                                <div>
+                                    <h3>Aquisição e Uso</h3>
+                                    <p>Acompanhe o caminho do visitante até a utilização da plataforma.</p>
+                                </div>
+                            </div>
+                            <span class="admin-section-tag">Funil</span>
+                        </div>
+                        <div class="admin-funnel" id="adminStatsAquisicao"></div>
+                    </div>
+
+                    <!-- RECEITA -->
+                    <div class="admin-section">
+                        <div class="admin-section-header">
+                            <div class="admin-section-title">
+                                <div class="admin-section-icon" style="background:#ecfdf5;color:#16a34a;">💳</div>
+                                <div>
+                                    <h3>Conversão e Receita</h3>
+                                    <p>Veja quem virou cliente e quanto a plataforma já faturou.</p>
+                                </div>
+                            </div>
+                            <span class="admin-section-tag">Financeiro</span>
+                        </div>
+                        <div class="stats-grid" id="adminStatsReceita"></div>
+                    </div>
+
+                    <!-- ECONOMIA DO NEGÓCIO -->
+                    <div class="admin-section">
+                        <div class="admin-section-header">
+                            <div class="admin-section-title">
+                                <div class="admin-section-icon" style="background:#fff7ed;color:#ea580c;">📊</div>
+                                <div>
+                                    <h3>Economia do Negócio</h3>
+                                    <p>Marketing, IA e retorno financeiro com os dados atuais da plataforma.</p>
+                                </div>
+                            </div>
+                            <span class="admin-section-tag">CAC · LTV</span>
+                        </div>
+                        <div class="stats-grid" id="adminStatsEconomia"></div>
+                        <div class="admin-economy-note">
+                            O resultado considera o investimento em marketing informado no painel e o custo estimado da IA.
+                        </div>
+                    </div>
+
+                    <!-- INVESTIMENTO -->
+                    <div class="admin-section">
+                        <div class="admin-section-header">
+                            <div class="admin-section-title">
+                                <div class="admin-section-icon" style="background:#f0fdf4;color:#16a34a;">💰</div>
+                                <div>
+                                    <h3>Investimento em Marketing</h3>
+                                    <p>Atualize o valor acumulado investido em marketing e vendas.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="admin-investment-box">
+                            <div>
+                                <h4>Investimento total até o momento</h4>
+                                <p>Esse valor é utilizado para calcular CAC, custo por cadastro e resultado.</p>
+                            </div>
+                            <div class="admin-investment-form">
+                                <input type="number" id="inputInvestimentoMarketing" placeholder="Ex: 1500.00">
+                                <button onclick="salvarInvestimentoAdmin()">Salvar</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- USUÁRIOS -->
+                    <div class="admin-section admin-users-section">
+                        <div class="admin-users-header">
+                            <div>
+                                <h3>👥 Usuários</h3>
+                                <span>Gerencie créditos e permissões dos usuários cadastrados.</span>
+                            </div>
+                            <span class="admin-section-tag">Gestão</span>
+                        </div>
+
+                        <div class="admin-table-shell">
+                            <div class="admin-table-wrapper">
+                                <table class="admin-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>E-mail</th>
+                                            <th>Créditos</th>
+                                            <th>Função</th>
+                                            <th style="text-align:center;">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabelaUsuariosAdmin"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
-
         </div>
     </div>
 </div>
@@ -1701,18 +2137,34 @@ async function carregarEstatisticasAdmin() {
             </div>`;
 
         document.getElementById('adminStatsGerais').innerHTML = `
-            <div style="background:linear-gradient(135deg,#eff6ff,#f8fafc);border:1px solid #dbeafe;border-radius:14px;padding:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;">
-                ${card(formatNum(data.usuarios_cadastrados), 'Usuários Cadastrados', '#2563eb')}
-                ${card(formatNum(data.usuarios_que_usaram), 'Usuários que Usaram', '#2563eb')}
-                ${card(formatPct(data.taxa_ativacao), 'Taxa de Ativação', '#2563eb')}
-                ${card(formatNum(data.usuarios_ativos), 'Ativos — últimos 7 dias', '#16a34a')}
-            </div>`;
+            ${card(formatNum(data.usuarios_cadastrados), 'Usuários Cadastrados', '#2563eb')}
+            ${card(formatNum(data.usuarios_ativos), 'Ativos — últimos 7 dias', '#16a34a')}
+            ${card(formatNum(data.geracoes), 'Gerações Realizadas', '#7c3aed')}
+            ${card(formatNum(data.creditos_vendidos), 'Créditos Vendidos', '#f59e0b')}
+            ${card(formatMoney(data.faturamento), 'Faturamento Total', '#16a34a')}
+        `;
 
+        const maxFunil = Math.max(
+            Number(data.geracoes) || 0,
+            Number(data.questoes_gratuitas) || 0,
+            Number(data.questoes_pagas) || 0,
+            Number(data.compradores) || 0,
+            1
+        );
+        const funnelItem = (icone, titulo, valor, corClass='') => {
+            const pct = Math.min(100, Math.max(3, ((Number(valor) || 0) / maxFunil) * 100));
+            return `
+                <div class="admin-funnel-item ${corClass}">
+                    <div class="admin-funnel-label">${icone} ${titulo}</div>
+                    <div class="admin-funnel-value">${formatNum(valor)}</div>
+                    <div class="admin-funnel-bar"><div class="admin-funnel-fill" style="width:${pct}%;"></div></div>
+                </div>`;
+        };
         document.getElementById('adminStatsAquisicao').innerHTML = `
-            ${card(formatNum(data.geracoes), 'Gerações de Questões')}
-            ${card(formatNum(data.questoes_gratuitas), 'Questões Gratuitas')}
-            ${card(formatNum(data.questoes_pagas), 'Questões Pagas')}
-            ${card(formatNum(data.compradores), 'Compradores', '#16a34a')}
+            ${funnelItem('🤖', 'Gerações de Questões', data.geracoes)}
+            ${funnelItem('🎁', 'Questões Gratuitas', data.questoes_gratuitas)}
+            ${funnelItem('💳', 'Questões Pagas', data.questoes_pagas)}
+            ${funnelItem('👤', 'Compradores', data.compradores)}
         `;
 
         document.getElementById('adminStatsReceita').innerHTML = `
