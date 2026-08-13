@@ -770,19 +770,111 @@ app.get('/api/verificar-compra/:paymentId', verificarToken, (req, res) => {
 });
 
 app.post('/api/registrar', authLimiter, async (req, res) => {
-    let { email, senha, confirmarSenha } = req.body;
-    if (!email || !senha || !confirmarSenha) return res.status(400).json({ erro: "Preencha todos os campos." });
-    if (senha !== confirmarSenha) return res.status(400).json({ erro: "As senhas não coincidem." });
+
+    let {
+        email,
+        senha,
+        confirmarSenha,
+
+        // Dados de atribuição
+        origem,
+        utm_source,
+        utm_medium,
+        utm_campaign,
+        gclid,
+        gbraid,
+        wbraid,
+        visitor_id
+
+    } = req.body;
+
+    if (!email || !senha || !confirmarSenha) {
+        return res.status(400).json({
+            erro: "Preencha todos os campos."
+        });
+    }
+
+    if (senha !== confirmarSenha) {
+        return res.status(400).json({
+            erro: "As senhas não coincidem."
+        });
+    }
 
     try {
+
         let senhaHash = await bcrypt.hash(senha, 10);
-        db.run(`INSERT INTO usuarios (email, senha, creditos, role) VALUES (?, ?, 30, 'user')`, [email, senhaHash], function(err) {
-            if (err) return res.status(400).json({ erro: "E-mail já cadastrado." });
-            let token = jwt.sign({ id: this.lastID }, SECRET_JWT, { expiresIn: '7d' });
-            res.json({ token, creditos: 30, role: 'user', temCpf: false });
-        });
+
+        // Valida a origem recebida
+        const origensPermitidas = [
+            'google_ads',
+            'instagram',
+            'direto',
+            'outros'
+        ];
+
+        const origemFinal = String(origem || 'direto').toLowerCase();
+
+        const origemValida = origensPermitidas.includes(origemFinal)
+            ? origemFinal
+            : 'outros';
+
+        db.run(
+            `INSERT INTO usuarios (
+                email,
+                senha,
+                creditos,
+                role,
+                origem,
+                utm_source,
+                utm_medium,
+                utm_campaign,
+                gclid,
+                gbraid,
+                wbraid,
+                visitor_id
+            )
+            VALUES (?, ?, 30, 'user', ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                email,
+                senhaHash,
+                origemValida,
+                utm_source || null,
+                utm_medium || null,
+                utm_campaign || null,
+                gclid || null,
+                gbraid || null,
+                wbraid || null,
+                visitor_id || null
+            ],
+            function(err) {
+
+                if (err) {
+                    return res.status(400).json({
+                        erro: "E-mail já cadastrado."
+                    });
+                }
+
+                let token = jwt.sign(
+                    { id: this.lastID },
+                    SECRET_JWT,
+                    { expiresIn: '7d' }
+                );
+
+                res.json({
+                    token,
+                    creditos: 30,
+                    role: 'user',
+                    temCpf: false
+                });
+            }
+        );
+
     } catch(e) {
-        res.status(500).json({ erro: "Erro ao registrar usuário." });
+
+        res.status(500).json({
+            erro: "Erro ao registrar usuário."
+        });
+
     }
 });
 
@@ -935,7 +1027,18 @@ app.post('/api/registrar-acesso', (req, res) => {
 });
 
 app.get('/api/admin/usuarios', verificarToken, verificarAdmin, (req, res) => {
-    db.all(`SELECT id, email, creditos, role FROM usuarios`, [], (err, rows) => {
+    db.all(`
+    SELECT
+        id,
+        email,
+        creditos,
+        role,
+        origem,
+        utm_source,
+        utm_medium,
+        utm_campaign
+    FROM usuarios
+`, [], (err, rows) => {
         if (err) return res.status(500).json({ erro: "Erro ao listar." });
         res.json(rows);
     });
