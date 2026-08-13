@@ -278,18 +278,40 @@ const db = new sqlite3.Database(dbPath, (err) => {
 
 db.serialize(() => {
     db.run(`CREATE TABLE IF NOT EXISTS usuarios (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        email TEXT UNIQUE,
-        senha TEXT,
-        creditos INTEGER DEFAULT 30,
-        role TEXT DEFAULT 'user',
-        cpf TEXT
-    )`);
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT UNIQUE,
+    senha TEXT,
+    creditos INTEGER DEFAULT 30,
+    role TEXT DEFAULT 'user',
+    cpf TEXT,
+    origem TEXT,
+    utm_source TEXT,
+    utm_medium TEXT,
+    utm_campaign TEXT,
+    gclid TEXT,
+    gbraid TEXT,
+    wbraid TEXT,
+    visitor_id TEXT
+)`);
 
     // Atualização silenciosa para caso o banco já exista sem a coluna cpf
     db.run(`ALTER TABLE usuarios ADD COLUMN cpf TEXT`, (err) => {
         // O erro é ignorado caso a coluna já exista
     });
+
+    // ============================================================
+// ATRIBUIÇÃO DE ORIGEM DOS CADASTROS
+// Compatibilidade com bancos já existentes
+// ============================================================
+
+db.run(`ALTER TABLE usuarios ADD COLUMN origem TEXT`, () => {});
+db.run(`ALTER TABLE usuarios ADD COLUMN utm_source TEXT`, () => {});
+db.run(`ALTER TABLE usuarios ADD COLUMN utm_medium TEXT`, () => {});
+db.run(`ALTER TABLE usuarios ADD COLUMN utm_campaign TEXT`, () => {});
+db.run(`ALTER TABLE usuarios ADD COLUMN gclid TEXT`, () => {});
+db.run(`ALTER TABLE usuarios ADD COLUMN gbraid TEXT`, () => {});
+db.run(`ALTER TABLE usuarios ADD COLUMN wbraid TEXT`, () => {});
+db.run(`ALTER TABLE usuarios ADD COLUMN visitor_id TEXT`, () => {});
 
     db.run(`CREATE TABLE IF NOT EXISTS historico (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
