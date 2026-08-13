@@ -1295,7 +1295,25 @@ if (!visitorId) {
     else if (utmSource) {
         origem = 'outros';
     }
+// ============================================================
+// GUARDA A ORIGEM PARA VINCULAR AO CADASTRO
+// ============================================================
 
+const origemSalva = localStorage.getItem('cadastro_origem_questoes');
+
+// Primeiro contato: guarda a origem encontrada.
+// Se já existe uma origem de campanha, preserva a primeira.
+if (!origemSalva || (origemSalva === 'direto' && origem !== 'direto')) {
+
+    localStorage.setItem('cadastro_origem_questoes', origem);
+    localStorage.setItem('cadastro_utm_source', utmSource || '');
+    localStorage.setItem('cadastro_utm_medium', utmMedium || '');
+    localStorage.setItem('cadastro_utm_campaign', utmCampaign || '');
+    localStorage.setItem('cadastro_gclid', gclid || '');
+    localStorage.setItem('cadastro_gbraid', gbraid || '');
+    localStorage.setItem('cadastro_wbraid', wbraid || '');
+    localStorage.setItem('cadastro_visitor_id', visitorId || '');
+}
     fetch('/api/registrar-acesso', {
         method: 'POST',
         headers: {
@@ -1603,10 +1621,24 @@ async function fazerRegistro() {
 
     try {
         let res = await fetch('/api/registrar', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ email, senha, confirmarSenha })
-        });
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+        email,
+        senha,
+        confirmarSenha,
+
+        // Dados de atribuição do cadastro
+        origem: localStorage.getItem('cadastro_origem_questoes') || 'direto',
+        utm_source: localStorage.getItem('cadastro_utm_source') || null,
+        utm_medium: localStorage.getItem('cadastro_utm_medium') || null,
+        utm_campaign: localStorage.getItem('cadastro_utm_campaign') || null,
+        gclid: localStorage.getItem('cadastro_gclid') || null,
+        gbraid: localStorage.getItem('cadastro_gbraid') || null,
+        wbraid: localStorage.getItem('cadastro_wbraid') || null,
+        visitor_id: localStorage.getItem('cadastro_visitor_id') || null
+    })
+});
         
         let data = await res.json();
         if(!res.ok) { document.getElementById("authErro").innerText = data.erro; return; }
