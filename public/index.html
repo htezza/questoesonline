@@ -1214,6 +1214,7 @@ src="https://www.facebook.com/tr?id=1548997376693347&ev=PageView&noscript=1"/>
                                             <th>E-mail</th>
                                             <th>Créditos</th>
                                             <th>Função</th>
+                                            <th>Origem</th>
                                             <th style="text-align:center;">Ações</th>
                                         </tr>
                                     </thead>
@@ -2397,6 +2398,28 @@ async function carregarListaUsuariosAdmin() {
                     <input type="number" id="inputCreditos_${u.id}" value="${u.creditos}" style="width: 80px; padding: 6px; margin: 0; display: inline-block;">
                 </td>
                 <td><span style="padding: 3px 8px; border-radius:6px; font-size:11px; font-weight:bold; background: ${u.role === 'admin' ? '#fee2e2;color:#991b1b' : '#f1f5f9;color:#475569'};">${u.role.toUpperCase()}</span></td>
+                <td>
+    <span style="
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: bold;
+        background:
+            ${u.origem === 'google_ads'
+                ? '#dbeafe;color:#1d4ed8'
+                : u.origem === 'instagram'
+                    ? '#fce7f3;color:#be185d'
+                    : '#f1f5f9;color:#475569'};
+    ">
+        ${u.origem === 'google_ads'
+            ? '🔵 Google Ads'
+            : u.origem === 'instagram'
+                ? '🟣 Instagram'
+                : u.origem === 'direto'
+                    ? '⚫ Direto'
+                    : '⚪ Outros'}
+    </span>
+</td>
                 <td style="text-align: center;">
                     <button onclick="salvarCreditosAdmin(${u.id})" style="width: auto; padding: 6px 12px; margin: 0; font-size: 11px; background: #16a34a;">💾 Salvar</button>
                 </td>
