@@ -1005,12 +1005,22 @@ src="https://www.facebook.com/tr?id=1548997376693347&ev=PageView&noscript=1"/>
 
             <!-- ABA 3: DESEMPENHO -->
             <div id="tabEstatisticas" class="hidden">
-                <div class="performance-header">
-                    <div>
-                        <h1>📊 Meu Desempenho</h1>
-                        <p>Acompanhe sua evolução, seus acertos e descubra como está seu rendimento nos simulados.</p>
-                    </div>
-                </div>
+    <div class="performance-header">
+        <div>
+            <h1 id="performanceTitulo">📊 Meu Desempenho</h1>
+            <p id="performanceSubtitulo">
+                Acompanhe sua evolução, seus acertos e descubra como está seu rendimento nos simulados.
+            </p>
+        </div>
+
+        <button
+            id="btnVoltarDesempenhoAdmin"
+            class="hidden"
+            onclick="voltarParaAdminUsuarios()"
+            style="width:auto;margin:0;background:#475569;padding:9px 14px;font-size:12px;">
+            ← Voltar para Usuários
+        </button>
+    </div>
 
                 <div class="performance-highlight">
                     <div>
@@ -2420,13 +2430,271 @@ async function carregarListaUsuariosAdmin() {
                     : '⚪ Outros'}
     </span>
 </td>
-                <td style="text-align: center;">
-                    <button onclick="salvarCreditosAdmin(${u.id})" style="width: auto; padding: 6px 12px; margin: 0; font-size: 11px; background: #16a34a;">💾 Salvar</button>
-                </td>
+                <td style="text-align: center; white-space: nowrap;">
+    <button
+        onclick="abrirDesempenhoUsuarioAdmin(${u.id}, '${u.email.replace(/'/g, "\\'")}')"
+        style="width:auto;padding:6px 10px;margin:0 4px 0 0;font-size:11px;background:#2563eb;">
+        📊 Desempenho
+    </button>
+
+    <button
+        onclick="salvarCreditosAdmin(${u.id})"
+        style="width:auto;padding:6px 12px;margin:0;font-size:11px;background:#16a34a;">
+        💾 Salvar
+    </button>
+</td>
             </tr>`;
     });
 }
+// ============================================================
+// ABRIR DESEMPENHO INDIVIDUAL DE USUÁRIO - ADMIN
+// ============================================================
+async function abrirDesempenhoUsuarioAdmin(usuarioId, email) {
 
+    const token = localStorage.getItem(TOKEN_KEY);
+
+    try {
+
+        const res = await fetch(
+            `/api/admin/desempenho/${usuarioId}`,
+            {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            }
+        );
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            alert(data.erro || "Erro ao carregar desempenho.");
+            return;
+        }
+
+        // Guarda que estamos visualizando um usuário pelo admin
+        window.usuarioDesempenhoAdmin = true;
+        window.usuarioDesempenhoAdminId = usuarioId;
+
+        // Esconde todas as abas
+        document.getElementById('tabGerador').classList.add('hidden');
+        document.getElementById('tabLoja').classList.add('hidden');
+        document.getElementById('tabEstatisticas').classList.add('hidden');
+        document.getElementById('tabAdmin').classList.add('hidden');
+
+        // Mostra a aba de desempenho
+        document.getElementById('tabEstatisticas').classList.remove('hidden');
+
+        // Título
+        document.getElementById('performanceTitulo').innerText =
+            `📊 Desempenho de ${email}`;
+
+        document.getElementById('performanceSubtitulo').innerText =
+            'Visualização administrativa do desempenho deste usuário.';
+
+        // Mostra botão voltar
+        document.getElementById('btnVoltarDesempenhoAdmin')
+            .classList.remove('hidden');
+
+        // Esconde botão de limpar histórico
+        document.querySelector('.clear-history-btn')
+            ?.classList.add('hidden');
+
+        // Carrega os dados desse usuário
+        preencherDesempenhoComHistorico(data.historico || []);
+
+        // Volta para o topo
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+
+    } catch (erro) {
+
+        console.error(
+            "Erro ao abrir desempenho administrativo:",
+            erro
+        );
+
+        alert("Erro ao carregar desempenho do usuário.");
+    }
+}
+    // ============================================================
+// PREENCHER PAINEL DE DESEMPENHO
+// ============================================================
+function preencherDesempenhoComHistorico(historico) {
+
+    if (!Array.isArray(historico)) {
+        historico = [];
+    }
+
+    const simulados = historico.length;
+
+    const questoes = historico.reduce(
+        (acc, curr) => acc + (Number(curr.total) || 0),
+        0
+    );
+
+    const acertos = historico.reduce(
+        (acc, curr) => acc + (Number(curr.acertos) || 0),
+        0
+    );
+
+    const erros = Math.max(0, questoes - acertos);
+
+    const aproveitamento =
+        questoes > 0
+            ? (acertos / questoes) * 100
+            : 0;
+
+    const media =
+        simulados > 0
+            ? historico.reduce(
+                (acc, curr) => acc + (Number(curr.nota) || 0),
+                0
+              ) / simulados
+            : 0;
+
+    const melhor =
+        simulados > 0
+            ? Math.max(
+                ...historico.map(h => Number(h.nota) || 0)
+              )
+            : 0;
+
+    const primeiro =
+        simulados > 0
+            ? Number(historico[0].nota) || 0
+            : 0;
+
+    const ultimo =
+        simulados > 0
+            ? Number(historico[simulados - 1].nota) || 0
+            : 0;
+
+    const variacao =
+        simulados > 1
+            ? ultimo - primeiro
+            : 0;
+
+    document.getElementById('statSimulados').innerText = simulados;
+    document.getElementById('statQuestoes').innerText = questoes;
+    document.getElementById('statAcertos').innerText = acertos;
+    document.getElementById('statErros').innerText = erros;
+    document.getElementById('statAproveitamento').innerText =
+        `${aproveitamento.toFixed(0)}%`;
+
+    document.getElementById('statMedia').innerText =
+        media.toFixed(1);
+
+    document.getElementById('statMelhorNota').innerText =
+        melhor.toFixed(1);
+
+    document.getElementById('legendAcertos').innerText =
+        acertos;
+
+    document.getElementById('legendErros').innerText =
+        erros;
+
+    document.getElementById('indicadorPrimeiro').innerText =
+        primeiro.toFixed(1);
+
+    document.getElementById('indicadorUltimo').innerText =
+        ultimo.toFixed(1);
+
+    document.getElementById('indicadorMelhor').innerText =
+        melhor.toFixed(1);
+
+    const variacaoEl =
+        document.getElementById('indicadorVariacao');
+
+    variacaoEl.innerText =
+        `${variacao >= 0 ? '+' : ''}${variacao.toFixed(1)}`;
+
+    variacaoEl.style.color =
+        variacao > 0
+            ? '#16a34a'
+            : variacao < 0
+                ? '#dc2626'
+                : '#64748b';
+
+    const mensagem =
+        document.getElementById('statMensagem');
+
+    if (!simulados) {
+        mensagem.innerText =
+            'Este usuário ainda não realizou nenhum simulado.';
+    } else if (aproveitamento >= 80) {
+        mensagem.innerText =
+            'Excelente rendimento!';
+    } else if (aproveitamento >= 60) {
+        mensagem.innerText =
+            'Bom rendimento. Continue acompanhando a evolução.';
+    } else {
+        mensagem.innerText =
+            'O usuário ainda precisa melhorar seu aproveitamento.';
+    }
+
+    const tip =
+        document.getElementById('performanceTip');
+
+    if (simulados > 1 && variacao > 0) {
+        tip.innerHTML =
+            `📈 <b>Evolução:</b> o último resultado está ${variacao.toFixed(1)} ponto(s) acima do primeiro.`;
+    } else if (simulados > 1 && variacao < 0) {
+        tip.innerHTML =
+            `🎯 <b>Atenção:</b> o último resultado está ${Math.abs(variacao).toFixed(1)} ponto(s) abaixo do primeiro.`;
+    } else {
+        tip.innerHTML =
+            `📊 <b>Visão administrativa:</b> acompanhamento do desempenho deste usuário.`;
+    }
+
+    renderizarGrafico(historico);
+    renderizarGraficoAcertosErros(acertos, erros);
+    renderizarUltimosSimulados(historico);
+}
+
+    function voltarParaAdminUsuarios() {
+
+    // Sai do modo de visualização individual
+    window.usuarioDesempenhoAdmin = false;
+    window.usuarioDesempenhoAdminId = null;
+
+    // Restaura título normal
+    document.getElementById('performanceTitulo').innerText =
+        '📊 Meu Desempenho';
+
+    document.getElementById('performanceSubtitulo').innerText =
+        'Acompanhe sua evolução, seus acertos e descubra como está seu rendimento nos simulados.';
+
+    // Esconde botão voltar
+    document.getElementById('btnVoltarDesempenhoAdmin')
+        .classList.add('hidden');
+
+    // Mostra botão de limpar histórico novamente
+    document.querySelector('.clear-history-btn')
+        ?.classList.remove('hidden');
+
+    // Volta para a aba Admin
+    document.getElementById('tabEstatisticas').classList.add('hidden');
+    document.getElementById('tabAdmin').classList.remove('hidden');
+
+    // Atualiza botão ativo
+    document.querySelectorAll('.tab-btn')
+        .forEach(btn => btn.classList.remove('active'));
+
+    document.getElementById('btnTabAdmin')
+        .classList.add('active');
+
+    // Recarrega a lista de usuários
+    carregarEstatisticasAdmin();
+    carregarListaUsuariosAdmin();
+
+    // Volta ao topo
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+}
 async function salvarCreditosAdmin(usuarioId) {
     let token = localStorage.getItem(TOKEN_KEY);
     let inputVal = document.getElementById(`inputCreditos_${usuarioId}`).value;
