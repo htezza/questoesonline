@@ -1044,6 +1044,67 @@ app.get('/api/admin/usuarios', verificarToken, verificarAdmin, (req, res) => {
     });
 });
 
+// ============================================================
+// DESEMPENHO INDIVIDUAL DE USUÁRIO - ADMIN
+// ============================================================
+app.get('/api/admin/desempenho/:usuarioId', verificarToken, verificarAdmin, (req, res) => {
+    const usuarioId = Number(req.params.usuarioId);
+
+    if (!usuarioId) {
+        return res.status(400).json({
+            erro: "Usuário inválido."
+        });
+    }
+
+    db.get(
+        `SELECT id, email, creditos, role, origem
+         FROM usuarios
+         WHERE id = ?`,
+        [usuarioId],
+        (err, usuario) => {
+
+            if (err) {
+                console.error("Erro ao buscar usuário para desempenho:", err);
+                return res.status(500).json({
+                    erro: "Erro ao buscar usuário."
+                });
+            }
+
+            if (!usuario) {
+                return res.status(404).json({
+                    erro: "Usuário não encontrado."
+                });
+            }
+
+            db.all(
+                `SELECT acertos, total, nota, data
+                 FROM historico
+                 WHERE usuario_id = ?
+                 ORDER BY id ASC`,
+                [usuarioId],
+                (historicoErr, historico) => {
+
+                    if (historicoErr) {
+                        console.error(
+                            "Erro ao buscar desempenho do usuário:",
+                            historicoErr
+                        );
+
+                        return res.status(500).json({
+                            erro: "Erro ao buscar desempenho."
+                        });
+                    }
+
+                    res.json({
+                        usuario,
+                        historico: historico || []
+                    });
+                }
+            );
+        }
+    );
+});
+
 app.post('/api/admin/creditos', verificarToken, verificarAdmin, (req, res) => {
     let { usuarioId, creditos } = req.body;
     db.run(`UPDATE usuarios SET creditos = ? WHERE id = ?`, [creditos, usuarioId], function(err) {
