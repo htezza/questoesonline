@@ -955,6 +955,19 @@ header{
   }
 }
 
+
+
+/* Gráfico de categorias — expansão exclusiva no desktop */
+@media(min-width:1024px){
+  #categoryChartCard{cursor:pointer}
+  #categoryChartCard:hover{box-shadow:0 8px 24px rgba(15,23,42,.08)}
+  #categoryChartExpandModal{display:none;position:fixed;inset:0;z-index:2147483000;align-items:center;justify-content:center;background:rgba(15,23,42,.55);padding:32px}
+  #categoryChartExpandModal.open{display:flex}
+  #categoryChartExpandPanel{position:relative;width:min(820px,90vw);height:min(820px,88vh);min-height:560px;background:#fff;border-radius:18px;border:1px solid #e2e8f0;box-shadow:0 24px 70px rgba(15,23,42,.25);padding:22px}
+  #categoryChartExpandCanvasWrap{position:relative;width:100%;height:calc(100% - 42px)}
+  #categoryChartExpandClose{position:absolute;top:14px;right:14px;width:34px;height:34px;border:0;border-radius:9px;background:#f1f5f9;color:#475569;font-size:22px;line-height:1;cursor:pointer}
+  #categoryChartExpandClose:hover{background:#e2e8f0;color:#0f172a}
+}
 </style>
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
@@ -3856,9 +3869,11 @@ function renderCashFlowChart(sel){
 
 function renderCategoryChart(tx){
  if(categoryChart)categoryChart.destroy();
+ window.categoryChart=categoryChart;
  const g={};tx.filter(t=>t.type==="expense"&&t.paid).forEach(t=>{const n=categoryName(t.categoryId);g[n]=(g[n]||0)+Number(t.amount);});
  let labels=Object.keys(g),data=Object.values(g);if(!labels.length){labels=["Sem despesas"];data=[1];}
  categoryChart=new Chart($("categoryChart"),{type:"doughnut",data:{labels,datasets:[{data}]},options:{responsive:true,maintainAspectRatio:false,cutout:"68%",radius:window.innerWidth<=639?"85%":"100%",plugins:{legend:{position:"bottom",labels:{boxWidth:14,boxHeight:10,padding:8,font:{size:10}}},tooltip:{callbacks:{label:c=>`${c.label}: ${money(c.raw)}`}}}}});
+ window.categoryChart=categoryChart;
 }
 
 function renderCategoryEvolution(currentTx,previousTx,currentMonth,previousMonth){
@@ -6567,5 +6582,87 @@ document.addEventListener('click', function(e){
 })();
 </script>
 
+
+
+<!-- Expansão do gráfico "Gastos por categoria" exclusiva no desktop -->
+<div id="categoryChartExpandModal" aria-hidden="true">
+  <div id="categoryChartExpandPanel">
+    <button type="button" id="categoryChartExpandClose" aria-label="Fechar gráfico ampliado">&times;</button>
+    <h3 class="font-bold text-lg mb-2">Gastos por categoria</h3>
+    <p class="text-xs text-slate-400 mb-2">Mês selecionado</p>
+    <div id="categoryChartExpandCanvasWrap">
+      <canvas id="categoryChartExpandCanvas"></canvas>
+    </div>
+  </div>
+</div>
+
+<script id="fincontrol-category-chart-expand-desktop">
+(function(){
+  let expandedChart=null;
+
+  function closeExpandedCategoryChart(){
+    const modal=document.getElementById("categoryChartExpandModal");
+    if(!modal)return;
+    if(expandedChart){expandedChart.destroy();expandedChart=null;}
+    modal.classList.remove("open");
+    modal.setAttribute("aria-hidden","true");
+  }
+
+  function openExpandedCategoryChart(){
+    if(window.innerWidth<1024 || !window.categoryChart)return;
+    const modal=document.getElementById("categoryChartExpandModal");
+    const canvas=document.getElementById("categoryChartExpandCanvas");
+    if(!modal||!canvas)return;
+
+    if(expandedChart){expandedChart.destroy();expandedChart=null;}
+
+    const source=window.categoryChart;
+    const labels=[...(source.data?.labels||[])];
+    const values=(source.data?.datasets?.[0]?.data||[]).map(Number);
+
+    expandedChart=new Chart(canvas,{
+      type:"doughnut",
+      data:{labels,datasets:[{data:values}]},
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        cutout:"68%",
+        radius:"100%",
+        plugins:{
+          legend:{position:"bottom",labels:{boxWidth:16,boxHeight:12,padding:10,font:{size:12}}},
+          tooltip:{callbacks:{label:c=>`${c.label}: ${money(c.raw)}`}}
+        }
+      }
+    });
+
+    modal.classList.add("open");
+    modal.setAttribute("aria-hidden","false");
+  }
+
+  function init(){
+    const card=document.getElementById("categoryChartCard");
+    const close=document.getElementById("categoryChartExpandClose");
+    const modal=document.getElementById("categoryChartExpandModal");
+    if(!card||!close||!modal)return;
+
+    card.addEventListener("click",function(){
+      if(window.innerWidth>=1024)openExpandedCategoryChart();
+    });
+    close.addEventListener("click",closeExpandedCategoryChart);
+    modal.addEventListener("click",function(e){
+      if(e.target===modal)closeExpandedCategoryChart();
+    });
+    document.addEventListener("keydown",function(e){
+      if(e.key==="Escape")closeExpandedCategoryChart();
+    });
+    window.addEventListener("resize",function(){
+      if(window.innerWidth<1024)closeExpandedCategoryChart();
+    });
+  }
+
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});
+  else init();
+})();
+</script>
 </body>
 </html>
